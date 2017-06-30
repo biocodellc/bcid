@@ -1,0 +1,5 @@
+rootProject.name = 'bcid'
+
+if (hasProperty("gradleFimsDir") && file(gradleFimsDir).exists()) {
+    includeBuild gradleFimsDir
+}

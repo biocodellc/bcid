@@ -1,0 +1,15 @@
+*.swp
+.idea/*
+*.iml
+*.props
+*.properties
+dist/*
+build/*
+classes/*
+javadocs/*
+tripleOutput/*
+.gradle
+jetty-env.xml
+biscicol-fims.ipr
+biscicol-fims.iws
+src/main/web/WEB-INF/web.xml

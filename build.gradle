@@ -1,0 +1,78 @@
+buildscript {
+    repositories {
+        maven {
+            url "http://repo.biocodellc.com/repository/maven-private/"
+            credentials {
+                username mavenUser
+                password mavenPass
+            }
+        }
+        mavenLocal()
+    }
+    dependencies {
+        classpath "org.biocode:gradle-fims:1.1.6"
+    }
+}
+
+apply plugin: "application"
+//apply plugin: "org.biocode.fims-web"
+
+
+fims {
+    maven {
+        username mavenUser
+        password mavenPass
+    }
+}
+
+repositories {
+    add(fims.mavenFims())
+    mavenLocal()
+}
+
+dependencies {
+}
+
+//=============================
+//= ssh configuration
+//=============================
+
+// jetty ssh plugin
+remotes {
+    biscicol {
+        host = 'biscicol.org'
+        user = biscicolUser
+        identity = file(identityFile)
+    }
+}
+
+
+//=============================
+//= deployment configuration
+//=============================
+
+updateDependencies {
+    remote = remotes.biscicol
+    location = remoteLibsDirectory
+}
+
+updateDependenciesDev {
+    remote = remotes.biscicol
+    location = remoteDevLibsDirectory
+}
+
+deployFims {
+    remote = remotes.biscicol
+    remoteLibsDir = remoteLibsDirectory
+    remoteWarDir = remoteWarDirectory
+}
+
+deployFimsDev {
+    remote = remotes.biscicol
+    remoteLibsDir = remoteDevLibsDirectory
+    remoteWarDir = remoteWarDevDirectory
+}
+
+deployFimsLocal {
+    deployDir = localWarDirectory
+}
