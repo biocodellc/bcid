@@ -42,7 +42,7 @@ public class BcidProperties {
     }
 
     public String creator() {
-        return env.getRequiredProperty("creator");
+        return env.getProperty("creator");
     }
 
     public int naan() {
@@ -57,4 +57,7 @@ public class BcidProperties {
         return env.getRequiredProperty("ezidPass");
     }
 
+    public boolean ezidRequest() {
+        return env.getRequiredProperty("ezidRequest", boolean.class);
+    }
 }

@@ -1,16 +1,13 @@
 package org.biocode.bcid.models;
 
 import org.apache.commons.validator.routines.UrlValidator;
+import org.hibernate.annotations.Type;
 import org.springframework.util.Assert;
-import org.springframework.util.StringUtils;
 
 import javax.persistence.*;
 import javax.ws.rs.BadRequestException;
-import javax.ws.rs.ServerErrorException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.Date;
-import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -19,7 +16,7 @@ import java.util.UUID;
 @Entity
 @Table(name = "bcids")
 public class Bcid {
-    private int bcidId;
+    private int id;
     private boolean ezidMade;
     private boolean ezidRequest;
     private URI identifier;
@@ -30,25 +27,27 @@ public class Bcid {
     private Date created;
     private Date modified;
     private UUID userId;
+    private String creator;
 
     public static class BcidBuilder {
 
         // Required parameters
         private String resourceType;
-        //Optional parameters
-        private boolean ezidMade = false;
+        private String creator;
 
-        private String subResourceType;
+        //Optional parameters
         private boolean ezidRequest = true;
         private String doi;
         private String title;
         private URI webAddress;
-        private String graph;
-        private String sourceFile;
+        private UUID userId;
 
-        public BcidBuilder(String resourceType) {
+        public BcidBuilder(String resourceType, String creator) {
             Assert.notNull(resourceType, "Bcid resourceType must not be null");
+            Assert.notNull(creator, "Bcid creator must not be null");
+
             this.resourceType = resourceType;
+            this.creator = creator;
         }
 
         public BcidBuilder ezidRequest(boolean val) {
@@ -72,6 +71,11 @@ public class Bcid {
             return this;
         }
 
+        public BcidBuilder userId(UUID val) {
+            userId = val;
+            return this;
+        }
+
         public Bcid build() {
             return new Bcid(this);
         }
@@ -80,11 +84,12 @@ public class Bcid {
 
     private Bcid(BcidBuilder builder) {
         resourceType = builder.resourceType;
-        ezidMade = builder.ezidMade;
         ezidRequest = builder.ezidRequest;
         doi = builder.doi;
         title = builder.title;
         webAddress = builder.webAddress;
+        creator = builder.creator;
+        userId = builder.userId;
     }
 
     // needed for hibernate
@@ -94,16 +99,16 @@ public class Bcid {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
-    public int getBcidId() {
-        return bcidId;
+    public int id() {
+        return id;
     }
 
-    private void setBcidId(int id) {
-        this.bcidId = id;
+    private void setId(int id) {
+        this.id = id;
     }
 
     @Column(columnDefinition = "bit", name = "ezid_made")
-    public boolean isEzidMade() {
+    public boolean ezidMade() {
         return ezidMade;
     }
 
@@ -112,7 +117,7 @@ public class Bcid {
     }
 
     @Column(columnDefinition = "bit not null", name = "ezid_request")
-    public boolean isEzidRequest() {
+    public boolean ezidRequest() {
         return ezidRequest;
     }
 
@@ -121,7 +126,7 @@ public class Bcid {
     }
 
     @Convert(converter = UriPersistenceConverter.class)
-    public URI getIdentifier() {
+    public URI identifier() {
         return identifier;
     }
 
@@ -130,7 +135,7 @@ public class Bcid {
             this.identifier = identifier;
     }
 
-    public String getDoi() {
+    public String doi() {
         return doi;
     }
 
@@ -139,7 +144,7 @@ public class Bcid {
     }
 
     @Column(columnDefinition = "text")
-    public String getTitle() {
+    public String title() {
         return title;
     }
 
@@ -149,33 +154,8 @@ public class Bcid {
 
     @Convert(converter = UriPersistenceConverter.class)
     @Column(name = "web_address")
-    public URI getWebAddress() {
-        // TODO move the following to the BcidService.create after all Bcid creation is done via BcidService class
-        if (identifier != null && webAddress != null && webAddress.toString().contains("%7Bark%7D")) {
-            try {
-                webAddress = new URI(StringUtils.replace(
-                        webAddress.toString(),
-                        "%7Bark%7D",
-                        identifier.toString()));
-            } catch (URISyntaxException e) {
-                throw new ServerErrorException(500, e);
-            }
-        }
+    public URI webAddress() {
         return webAddress;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Bcid)) return false;
-
-        Bcid bcid = (Bcid) o;
-        return getIdentifier() != null && Objects.equals(getIdentifier(), bcid.getIdentifier());
-    }
-
-    @Override
-    public int hashCode() {
-        return 31;
     }
 
     public void setWebAddress(URI webAddress) {
@@ -184,7 +164,7 @@ public class Bcid {
     }
 
     @Column(nullable = false, name = "resource_type")
-    public String getResourceType() {
+    public String resourceType() {
         return resourceType;
     }
 
@@ -192,18 +172,37 @@ public class Bcid {
         this.resourceType = resourceType;
     }
 
+    @Type(type="pg-uuid")
+    @Column(name="user_id")
+    public UUID userId() {
+        return userId;
+    }
+
+    public void setUserId(UUID userId) {
+        this.userId = userId;
+    }
+
+    public String creator() {
+        return creator;
+    }
+
+    public void setCreator(String creator) {
+        this.creator = creator;
+    }
+
+    @Column(updatable = false)
     @Temporal(TemporalType.TIMESTAMP)
-    public Date getModified() {
+    public Date modified() {
         return modified;
     }
 
-    public void setModified(Date modified) {
+    private void setModified(Date modified) {
         this.modified = modified;
     }
 
     @Column(updatable = false)
     @Temporal(TemporalType.TIMESTAMP)
-    public Date getCreated() {
+    public Date created() {
         return created;
     }
 
@@ -212,18 +211,35 @@ public class Bcid {
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Bcid)) return false;
+
+        Bcid bcid = (Bcid) o;
+
+        return identifier != null ? identifier.equals(bcid.identifier) : bcid.identifier == null;
+    }
+
+    @Override
+    public int hashCode() {
+        return identifier != null ? identifier.hashCode() : 0;
+    }
+
+    @Override
     public String toString() {
         return "Bcid{" +
-                "bcidId=" + bcidId +
+                "id=" + id +
                 ", ezidMade=" + ezidMade +
                 ", ezidRequest=" + ezidRequest +
-                ", identifier='" + identifier + '\'' +
+                ", identifier=" + identifier +
                 ", doi='" + doi + '\'' +
                 ", title='" + title + '\'' +
-                ", webAddress='" + webAddress + '\'' +
+                ", webAddress=" + webAddress +
                 ", resourceType='" + resourceType + '\'' +
                 ", created=" + created +
                 ", modified=" + modified +
+                ", userId=" + userId +
+                ", creator='" + creator + '\'' +
                 '}';
     }
 

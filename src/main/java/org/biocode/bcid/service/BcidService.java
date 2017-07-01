@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import javax.ws.rs.ServerErrorException;
 import java.math.BigInteger;
@@ -42,28 +43,43 @@ public class BcidService {
     }
 
     @Transactional
-    public Bcid create(Bcid bcid, int userId) {
+    public Bcid create(Bcid bcid) {
         int naan = props.naan();
 
 //        User user = userService.getUser(userId);
 //        bcid.setUser(user);
 
         // if the user is demo, never create ezid's
-        if (bcid.isEzidRequest() && userService.getUser(userId).getUsername().equals("demo"))
+//        if (bcid.ezidRequest() && userService.getUser(userId).getUsername().equals("demo"))
+        if (!props.ezidRequest()) {
             bcid.setEzidRequest(false);
+        }
         bcidRepository.save(bcid);
 
         // generate the identifier
         try {
-            bcid.setIdentifier(generateBcidIdentifier(bcid.getBcidId(), naan));
+            URI identifier = generateBcidIdentifier(bcid.id(), naan);
+            bcid.setIdentifier(identifier);
+
+            if (bcid.webAddress() != null && bcid.webAddress().toString().contains("%7Bark%7D")) {
+                try {
+                    bcid.setWebAddress(new URI(StringUtils.replace(
+                            bcid.webAddress().toString(),
+                            "%7Bark%7D",
+                            identifier.toString()
+                    )));
+                } catch (URISyntaxException e) {
+                    throw new ServerErrorException(500, e);
+                }
+            }
         } catch (URISyntaxException e) {
             throw new ServerErrorException(String.format(
                     "URISyntaxException while generating identifier for bcid: %s", bcid),
                     500, e);
         }
-        bcidRepository.save(bcid);
 
-        if (bcid.isEzidRequest()) {
+        bcidRepository.save(bcid);
+        if (bcid.ezidRequest()) {
             createBcidsEZIDs();
         }
 
@@ -135,23 +151,23 @@ public class BcidService {
 
             // Register this as an EZID
             try {
-                URI identifier = new URI(ezidService.createIdentifier(String.valueOf(bcid.getIdentifier()), map));
+                URI identifier = new URI(ezidService.createIdentifier(String.valueOf(bcid.identifier()), map));
                 bcid.setEzidMade(true);
                 logger.info("{}", identifier.toString());
             } catch (EzidException e) {
-                logger.info("EzidException thrown trying to create Ezid {}. Trying to update now.", bcid.getIdentifier(), e);
+                logger.info("EzidException thrown trying to create Ezid {}. Trying to update now.", bcid.identifier(), e);
                 // Attempt to set Metadata if this is an Exception
                 try {
-                    ezidService.setMetadata(String.valueOf(bcid.getIdentifier()), map);
+                    ezidService.setMetadata(String.valueOf(bcid.identifier()), map);
                     bcid.setEzidMade(true);
                 } catch (EzidException e1) {
-                    logger.error("Exception thrown in attempting to create OR update EZID {}, a permission issue?", bcid.getIdentifier(), e1);
-                    ezidErrors.put(String.valueOf(bcid.getIdentifier()), ExceptionUtils.getStackTrace(e1));
+                    logger.error("Exception thrown in attempting to create OR update EZID {}, a permission issue?", bcid.identifier(), e1);
+                    ezidErrors.put(String.valueOf(bcid.identifier()), ExceptionUtils.getStackTrace(e1));
                 }
 
             } catch (URISyntaxException e) {
-                logger.error("Bad uri syntax for " + bcid.getIdentifier() + ", " + map, e);
-                ezidErrors.put(String.valueOf(bcid.getIdentifier()), "Bad uri syntax");
+                logger.error("Bad uri syntax for " + bcid.identifier() + ", " + map, e);
+                ezidErrors.put(String.valueOf(bcid.identifier()), "Bad uri syntax");
             }
         }
 

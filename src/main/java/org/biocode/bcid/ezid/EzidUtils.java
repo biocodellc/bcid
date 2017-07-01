@@ -4,7 +4,6 @@ import org.apache.commons.lang.StringUtils;
 import org.biocode.bcid.BcidProperties;
 import org.biocode.bcid.EmailUtils;
 import org.biocode.bcid.models.Bcid;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -16,7 +15,6 @@ public class EzidUtils {
     private static final String DEFAULT_PUBLISHER = "Biocode FIMS System";
     private final BcidProperties props;
 
-    @Autowired
     public EzidUtils(BcidProperties props) {
         this.props = props;
     }
@@ -59,22 +57,22 @@ public class EzidUtils {
         // Get creator, using any system defined creator to override the default which is based on user data
         String creator = this.props.creator();
         if (StringUtils.isBlank(creator)) {
-            creator = getEzidCreatorField(bcid);
+//            creator = getEzidCreatorField(bcid);
         }
 
         return dcMap(
-                this.props.resolverTargetPrefix() + bcid.getIdentifier(),
-                creator,
-                bcid.getTitle(),
+                this.props.resolverTargetPrefix() + bcid.identifier(),
+                bcid.creator(),
+                bcid.title(),
                 publisher,
-                String.valueOf(bcid.getModified()),
-                bcid.getResourceType());
+                String.valueOf(bcid.modified()),
+                bcid.resourceType());
     }
 
-    private String getEzidCreatorField(Bcid bcid) {
-        User bcidUser = bcid.getUser();
-        return bcidUser.getFirstName() + " " + bcidUser.getLastName() + " <" + bcidUser.getEmail() + ">";
-    }
+//    private String getEzidCreatorField(Bcid bcid) {
+//        User bcidUser = bcid.getUser();
+//        return bcidUser.getFirstName() + " " + bcidUser.getLastName() + " <" + bcidUser.getEmail() + ">";
+//    }
 
     /**
      * send an email report for the failed Ezids
@@ -95,7 +93,7 @@ public class EzidUtils {
         }
 
         // Send an Email that this completed
-        EmailUtils.sendAdminEmail(
+        new EmailUtils(props).sendAdminEmail(
                 "Error creating Ezid(s)",
                 sb.toString()
         );

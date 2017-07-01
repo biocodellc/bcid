@@ -37,28 +37,22 @@ public class BcidMetadataSchema {
     }
 
     private void setMetadataElements() {
-        Expedition expedition = bcid.getExpedition();
-        if (expedition != null && expedition.getProject() != null) {
-            dcPublisher.setValue(expedition.getProject().getProjectCode());
-            isPublic.setValue(String.valueOf(expedition.getProject().isPublic()));
-        }
-
-        identifier.setValue(String.valueOf(bcid.getIdentifier()));
+        identifier.setValue(String.valueOf(bcid.identifier()));
         about.setValue(props.resolverTargetPrefix() + identifierObject.getIdentifier());
-        resource.setValue(bcid.getResourceType());
+        resource.setValue(bcid.resourceType());
 
-        dcDate.setValue(String.valueOf(bcid.getModified()));
-        dcCreator.setValue(bcid.getUser().getFullName());
-        dcTitle.setValue(bcid.getTitle());
+        dcDate.setValue(String.valueOf(bcid.modified()));
+        dcCreator.setValue(bcid.creator());
+        dcTitle.setValue(bcid.title());
         dcSource.setValue(identifierObject.getSuffix());
         dcRights.setValue(props.rights());
 
-        if (!bcid.getUser().getFullName().equals("Test Account")) {
-            dcIsReferencedBy.setValue("http://n2t.net/" + bcid.getIdentifier());
+        if (bcid.ezidMade()) {
+            dcIsReferencedBy.setValue("http://n2t.net/" + bcid.identifier());
         }
 
-        if (bcid.getDoi() != null) {
-            String doi = bcid.getDoi().replace("doi:", "http://dx.doi.org/");
+        if (bcid.doi() != null) {
+            String doi = bcid.doi().replace("doi:", "http://dx.doi.org/");
             dcIsPartOf.setValue(doi);
         }
 
