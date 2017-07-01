@@ -92,13 +92,8 @@ public class BcidService {
     }
 
     @Transactional(readOnly = true)
-    public Bcid getBcid(String identifier) {
+    public Bcid getBcid(URI identifier) {
         return bcidRepository.findOneByIdentifier(identifier);
-    }
-
-    @Transactional(readOnly = true)
-    public Bcid getBcidByTitle(int expeditionId, String title) {
-        return bcidRepository.findOneByTitleAndExpeditionExpeditionId(title, expeditionId);
     }
 
 

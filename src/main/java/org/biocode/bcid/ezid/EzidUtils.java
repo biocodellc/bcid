@@ -12,7 +12,6 @@ import java.util.Map;
  * Class to help with EZID creation
  */
 public class EzidUtils {
-    private static final String DEFAULT_PUBLISHER = "Biocode FIMS System";
     private final BcidProperties props;
 
     public EzidUtils(BcidProperties props) {
@@ -50,9 +49,6 @@ public class EzidUtils {
 
     public HashMap<String, String> getDcMap(Bcid bcid) {
         String publisher = this.props.publisher();
-        if (StringUtils.isBlank(publisher)) {
-            publisher = DEFAULT_PUBLISHER;
-        }
 
         // Get creator, using any system defined creator to override the default which is based on user data
         String creator = this.props.creator();

@@ -58,6 +58,6 @@ public class BcidProperties {
     }
 
     public boolean ezidRequest() {
-        return env.getRequiredProperty("ezidRequest", boolean.class);
+        return env.getRequiredProperty("ezidRequests", boolean.class);
     }
 }

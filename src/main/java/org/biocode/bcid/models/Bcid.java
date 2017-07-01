@@ -1,5 +1,13 @@
 package org.biocode.bcid.models;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.validator.routines.UrlValidator;
 import org.hibernate.annotations.Type;
 import org.springframework.util.Assert;
@@ -13,22 +21,54 @@ import java.util.UUID;
 /**
  * Bcid Entity object
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonDeserialize(builder = Bcid.BcidBuilder.class)
 @Entity
 @Table(name = "bcids")
 public class Bcid {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @JsonIgnore
     private int id;
+
+    @Column(columnDefinition = "bit", name = "ezid_made")
     private boolean ezidMade;
+
+    @Column(columnDefinition = "bit not null", name = "ezid_request")
     private boolean ezidRequest;
+
+    @Convert(converter = UriPersistenceConverter.class)
     private URI identifier;
+
     private String doi;
+
+    @Column(columnDefinition = "text")
     private String title;
+
+    @Convert(converter = UriPersistenceConverter.class)
+    @Column(name = "web_address")
     private URI webAddress;
+
+    @Column(nullable = false, name = "resource_type")
     private String resourceType;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @Column(updatable = false, insertable = false)
+    @Temporal(TemporalType.TIMESTAMP)
     private Date created;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @Column(updatable = false, insertable = false)
+    @Temporal(TemporalType.TIMESTAMP)
     private Date modified;
+
+    @Type(type="pg-uuid")
+    @Column(name="user_id")
     private UUID userId;
+
     private String creator;
 
+    @JsonPOJOBuilder(withPrefix = "")
     public static class BcidBuilder {
 
         // Required parameters
@@ -42,6 +82,7 @@ public class Bcid {
         private URI webAddress;
         private UUID userId;
 
+        @JsonCreator
         public BcidBuilder(String resourceType, String creator) {
             Assert.notNull(resourceType, "Bcid resourceType must not be null");
             Assert.notNull(creator, "Bcid creator must not be null");
@@ -77,6 +118,9 @@ public class Bcid {
         }
 
         public Bcid build() {
+            if (StringUtils.isEmpty(title)) {
+                title = resourceType;
+            }
             return new Bcid(this);
         }
 
@@ -96,18 +140,22 @@ public class Bcid {
     Bcid() {
     }
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
+    public void update(Bcid bcid) {
+        if (!this.ezidMade()) {
+            ezidRequest = bcid.ezidRequest();
+        }
+
+        doi = bcid.doi();
+        title = bcid.title();
+        webAddress = bcid.webAddress();
+        userId = bcid.userId();
+        creator = bcid.creator();
+    }
+
     public int id() {
         return id;
     }
 
-    private void setId(int id) {
-        this.id = id;
-    }
-
-    @Column(columnDefinition = "bit", name = "ezid_made")
     public boolean ezidMade() {
         return ezidMade;
     }
@@ -116,7 +164,6 @@ public class Bcid {
         this.ezidMade = ezidMade;
     }
 
-    @Column(columnDefinition = "bit not null", name = "ezid_request")
     public boolean ezidRequest() {
         return ezidRequest;
     }
@@ -125,7 +172,6 @@ public class Bcid {
         this.ezidRequest = ezidRequest;
     }
 
-    @Convert(converter = UriPersistenceConverter.class)
     public URI identifier() {
         return identifier;
     }
@@ -139,21 +185,10 @@ public class Bcid {
         return doi;
     }
 
-    public void setDoi(String doi) {
-        this.doi = doi;
-    }
-
-    @Column(columnDefinition = "text")
     public String title() {
         return title;
     }
 
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    @Convert(converter = UriPersistenceConverter.class)
-    @Column(name = "web_address")
     public URI webAddress() {
         return webAddress;
     }
@@ -163,51 +198,24 @@ public class Bcid {
         this.webAddress = webAddress;
     }
 
-    @Column(nullable = false, name = "resource_type")
     public String resourceType() {
         return resourceType;
     }
 
-    public void setResourceType(String resourceType) {
-        this.resourceType = resourceType;
-    }
-
-    @Type(type="pg-uuid")
-    @Column(name="user_id")
     public UUID userId() {
         return userId;
-    }
-
-    public void setUserId(UUID userId) {
-        this.userId = userId;
     }
 
     public String creator() {
         return creator;
     }
 
-    public void setCreator(String creator) {
-        this.creator = creator;
-    }
-
-    @Column(updatable = false)
-    @Temporal(TemporalType.TIMESTAMP)
     public Date modified() {
         return modified;
     }
 
-    private void setModified(Date modified) {
-        this.modified = modified;
-    }
-
-    @Column(updatable = false)
-    @Temporal(TemporalType.TIMESTAMP)
     public Date created() {
         return created;
-    }
-
-    private void setCreated(Date created) {
-        this.created = created;
     }
 
     @Override

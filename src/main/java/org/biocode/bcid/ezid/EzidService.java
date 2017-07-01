@@ -43,6 +43,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.UnsupportedCharsetException;
@@ -376,7 +377,7 @@ public class EzidService {
                     try {
                         StringEntity myEntity = new StringEntity(requestBody, "UTF-8");
                         ((HttpPut) request).setEntity(myEntity);
-                    } catch (UnsupportedCharsetException e) {
+                    } catch (UnsupportedCharsetException | UnsupportedEncodingException e) {
                         throw new EzidException(e);
                     }
                 }
@@ -389,7 +390,7 @@ public class EzidService {
                         System.out.println("requestBody = " + requestBody);
                         StringEntity myEntity = new StringEntity(requestBody, "UTF-8");
                         ((HttpPost) request).setEntity(myEntity);
-                    } catch (UnsupportedCharsetException e) {
+                    } catch (UnsupportedCharsetException | UnsupportedEncodingException e) {
                         throw new EzidException(e);
                     }
                 }

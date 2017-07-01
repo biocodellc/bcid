@@ -1,5 +1,6 @@
 package org.biocode.bcid.rest;
 
+import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
 import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 
@@ -12,7 +13,7 @@ public class BcidJerseyApplication extends ResourceConfig {
         super();
 
         packages("org.biocode.bcid.rest.services");
-//        register(ObjectMapperContextResolver.class);
+        register(BcidObjectMapper.class);
         register(JacksonFeature.class);
 
 //        register(FimsExceptionMapper.class);

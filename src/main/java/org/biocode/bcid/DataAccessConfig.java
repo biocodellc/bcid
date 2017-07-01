@@ -49,14 +49,14 @@ public class DataAccessConfig {
         Properties jpaProperties = new Properties();
         jpaProperties.setProperty("hibernate.dialect", "org.hibernate.dialect.PostgreSQL94Dialect");
         jpaProperties.setProperty("hibernate.show_sql", env.getProperty("hibernate.show_sql"));
-        jpaProperties.setProperty("hibernate.formate_sql", env.getProperty("hibernate.format_sql"));
+        jpaProperties.setProperty("hibernate.format_sql", env.getProperty("hibernate.format_sql"));
         jpaProperties.setProperty("hibernate.id.new_generator_mappings", "true");
         jpaProperties.setProperty("hibernate.max_fetch_depth", "3");
 
         f.setDataSource(dataSource());
         f.setJpaVendorAdapter(new HibernateJpaVendorAdapter());
-        f.setPackagesToScan("biocode.fims.models");
-        f.setMappingResources("sql-results-mappings.xml", "named-queries.xml");
+        f.setPackagesToScan("org.biocode.bcid.models");
+//        f.setMappingResources("sql-results-mappings.xml", "named-queries.xml");
         f.setJpaProperties(jpaProperties);
 
         return f;
