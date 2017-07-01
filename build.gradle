@@ -54,6 +54,8 @@ dependencies {
     server 'org.apache.httpcomponents:httpclient:4.2.1'
 
     provided 'org.eclipse.jetty:jetty-servlet:9.3.3.v20150827'
+
+    testCompile "junit:junit-dep:4.10"
 }
 
 //=============================
