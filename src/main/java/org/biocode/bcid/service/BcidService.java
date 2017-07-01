@@ -1,0 +1,172 @@
+package org.biocode.bcid.service;
+
+import org.apache.commons.lang.exception.ExceptionUtils;
+import org.biocode.bcid.BcidEncoder;
+import org.biocode.bcid.ezid.EzidException;
+import org.biocode.bcid.ezid.EzidService;
+import org.biocode.bcid.ezid.EzidUtils;
+import org.biocode.bcid.models.Bcid;
+import org.biocode.bcid.repositories.BcidRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.ws.rs.ServerErrorException;
+import java.math.BigInteger;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Set;
+
+/**
+ * Service class for handling {@link Bcid} persistence
+ */
+@Service
+public class BcidService {
+    private static final String scheme = "ark:";
+    private static final Logger logger = LoggerFactory.getLogger(BcidService.class);
+
+    @PersistenceContext(unitName = "entityManagerFactory")
+    EntityManager entityManager;
+
+    private final BcidRepository bcidRepository;
+    protected final SettingsManager settingsManager;
+    private final UserService userService;
+    private final BcidEncoder bcidEncoder = new BcidEncoder();
+
+    @Autowired
+    public BcidService(BcidRepository bcidRepository, SettingsManager settingsManager,
+                       UserService userService) {
+        this.bcidRepository = bcidRepository;
+        this.settingsManager = settingsManager;
+        this.userService = userService;
+    }
+
+    @Transactional
+    public Bcid create(Bcid bcid, int userId) {
+        int naan = new Integer(settingsManager.retrieveValue("naan"));
+
+//        User user = userService.getUser(userId);
+//        bcid.setUser(user);
+
+        // if the user is demo, never create ezid's
+        if (bcid.isEzidRequest() && userService.getUser(userId).getUsername().equals("demo"))
+            bcid.setEzidRequest(false);
+        bcidRepository.save(bcid);
+
+        // generate the identifier
+        try {
+            bcid.setIdentifier(generateBcidIdentifier(bcid.getBcidId(), naan));
+        } catch (URISyntaxException e) {
+            throw new ServerErrorException(String.format(
+                    "URISyntaxException while generating identifier for bcid: %s", bcid),
+                    500, e);
+        }
+        bcidRepository.save(bcid);
+
+        if (bcid.isEzidRequest()) {
+            createBcidsEZIDs();
+        }
+
+        return bcid;
+
+    }
+
+    public void update(Bcid bcid) {
+        bcidRepository.save(bcid);
+    }
+
+    @Transactional(readOnly = true)
+    public Bcid getBcid(String identifier) {
+        return bcidRepository.findOneByIdentifier(identifier);
+    }
+
+    @Transactional(readOnly = true)
+    public Bcid getBcidByTitle(int expeditionId, String title) {
+        return bcidRepository.findOneByTitleAndExpeditionExpeditionId(title, expeditionId);
+    }
+
+
+    @Transactional(readOnly = true)
+    public Set<Bcid> getBcidsWithEzidRequest() {
+        return bcidRepository.findAllByEzidRequestTrue();
+    }
+
+
+    private URI generateBcidIdentifier(int bcidId, int naan) throws URISyntaxException {
+        String bow = scheme + "/" + naan + "/";
+
+        // Create the shoulder Bcid (String Bcid Bcid)
+        String shoulder = bcidEncoder.encode(new BigInteger(String.valueOf(bcidId)));
+
+        // Create the identifier
+        return new URI(bow + shoulder);
+    }
+
+    @Transactional(readOnly = true)
+    private Set<Bcid> getBcidsWithEzidRequestNotMade() {
+        return bcidRepository.findAllByEzidRequestTrueAndEzidMadeFalse();
+    }
+
+    /**
+     * Go through bcids table and create any ezidService fields that have yet to be created. We want to create any
+     * EZIDs that have not been made yet.
+     * <p/>
+     * case
+     */
+    private void createBcidsEZIDs() {
+        // NOTE: On any type of EZID error, we DON'T want to fail the process.. This means we need
+        // a separate mechanism on the server side to check creation of EZIDs.  This is easy enough to do
+        // in the Database.
+        EzidService ezidService = new EzidService();
+        HashMap<String, String> ezidErrors = new HashMap<>();
+        // Setup EZID account/login information
+        try {
+            ezidService.login(settingsManager.retrieveValue("eziduser"), settingsManager.retrieveValue("ezidpass"));
+        } catch (EzidException e) {
+            ezidErrors.put(null, ExceptionUtils.getStackTrace(e));
+
+        }
+        Set<Bcid> bcids = getBcidsWithEzidRequestNotMade();
+        EzidUtils ezidUtils = new EzidUtils(settingsManager);
+
+        for (Bcid bcid : bcids) {
+            // Dublin Core metadata profile element
+            HashMap<String, String> map = ezidUtils.getDcMap(bcid);
+
+            // Register this as an EZID
+            try {
+                URI identifier = new URI(ezidService.createIdentifier(String.valueOf(bcid.getIdentifier()), map));
+                bcid.setEzidMade(true);
+                logger.info("{}", identifier.toString());
+            } catch (EzidException e) {
+                logger.info("EzidException thrown trying to create Ezid {}. Trying to update now.", bcid.getIdentifier(), e);
+                // Attempt to set Metadata if this is an Exception
+                try {
+                    ezidService.setMetadata(String.valueOf(bcid.getIdentifier()), map);
+                    bcid.setEzidMade(true);
+                } catch (EzidException e1) {
+                    logger.error("Exception thrown in attempting to create OR update EZID {}, a permission issue?", bcid.getIdentifier(), e1);
+                    ezidErrors.put(String.valueOf(bcid.getIdentifier()), ExceptionUtils.getStackTrace(e1));
+                }
+
+            } catch (URISyntaxException e) {
+                logger.error("Bad uri syntax for " + bcid.getIdentifier() + ", " + map, e);
+                ezidErrors.put(String.valueOf(bcid.getIdentifier()), "Bad uri syntax");
+            }
+        }
+
+        if (!ezidErrors.isEmpty()) {
+            ezidUtils.sendErrorEmail(ezidErrors);
+        }
+    }
+
+    public List<Bcid> getBcidsWithOutEzidRequest() {
+        return bcidRepository.findAllByEzidRequestFalse();
+    }
+}
