@@ -1,7 +1,8 @@
 package org.biocode.bcid.service;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
-import org.biocode.bcid.BcidEncoder;
+import org.biocode.bcid.BcidProperties;
+import org.biocode.bcid.Encoder;
 import org.biocode.bcid.ezid.EzidException;
 import org.biocode.bcid.ezid.EzidService;
 import org.biocode.bcid.ezid.EzidUtils;
@@ -13,8 +14,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import javax.ws.rs.ServerErrorException;
 import java.math.BigInteger;
 import java.net.URI;
@@ -31,25 +30,20 @@ public class BcidService {
     private static final String scheme = "ark:";
     private static final Logger logger = LoggerFactory.getLogger(BcidService.class);
 
-    @PersistenceContext(unitName = "entityManagerFactory")
-    EntityManager entityManager;
-
     private final BcidRepository bcidRepository;
-    protected final SettingsManager settingsManager;
-    private final UserService userService;
-    private final BcidEncoder bcidEncoder = new BcidEncoder();
+    private final BcidProperties props;
+    private final Encoder encoder;
 
     @Autowired
-    public BcidService(BcidRepository bcidRepository, SettingsManager settingsManager,
-                       UserService userService) {
+    public BcidService(BcidRepository bcidRepository, BcidProperties props, Encoder encoder) {
         this.bcidRepository = bcidRepository;
-        this.settingsManager = settingsManager;
-        this.userService = userService;
+        this.props = props;
+        this.encoder = encoder;
     }
 
     @Transactional
     public Bcid create(Bcid bcid, int userId) {
-        int naan = new Integer(settingsManager.retrieveValue("naan"));
+        int naan = props.naan();
 
 //        User user = userService.getUser(userId);
 //        bcid.setUser(user);
@@ -102,7 +96,7 @@ public class BcidService {
         String bow = scheme + "/" + naan + "/";
 
         // Create the shoulder Bcid (String Bcid Bcid)
-        String shoulder = bcidEncoder.encode(new BigInteger(String.valueOf(bcidId)));
+        String shoulder = encoder.encode(new BigInteger(String.valueOf(bcidId)));
 
         // Create the identifier
         return new URI(bow + shoulder);
@@ -127,13 +121,13 @@ public class BcidService {
         HashMap<String, String> ezidErrors = new HashMap<>();
         // Setup EZID account/login information
         try {
-            ezidService.login(settingsManager.retrieveValue("eziduser"), settingsManager.retrieveValue("ezidpass"));
+            ezidService.login(props.ezidUser(), props.ezidPass());
         } catch (EzidException e) {
             ezidErrors.put(null, ExceptionUtils.getStackTrace(e));
 
         }
         Set<Bcid> bcids = getBcidsWithEzidRequestNotMade();
-        EzidUtils ezidUtils = new EzidUtils(settingsManager);
+        EzidUtils ezidUtils = new EzidUtils(props);
 
         for (Bcid bcid : bcids) {
             // Dublin Core metadata profile element

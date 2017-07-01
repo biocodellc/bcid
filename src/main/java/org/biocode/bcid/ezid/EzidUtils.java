@@ -1,6 +1,7 @@
 package org.biocode.bcid.ezid;
 
 import org.apache.commons.lang.StringUtils;
+import org.biocode.bcid.BcidProperties;
 import org.biocode.bcid.EmailUtils;
 import org.biocode.bcid.models.Bcid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,11 +14,11 @@ import java.util.Map;
  */
 public class EzidUtils {
     private static final String DEFAULT_PUBLISHER = "Biocode FIMS System";
-    private final SettingsManager settingsManager;
+    private final BcidProperties props;
 
     @Autowired
-    public EzidUtils(SettingsManager settingsManager) {
-        this.settingsManager = settingsManager;
+    public EzidUtils(BcidProperties props) {
+        this.props = props;
     }
 
     private HashMap<String, String> ercMap(String target, String what, String who, String when) {
@@ -50,20 +51,19 @@ public class EzidUtils {
     }
 
     public HashMap<String, String> getDcMap(Bcid bcid) {
-        String publisher = this.settingsManager.retrieveValue("publisher");
+        String publisher = this.props.publisher();
         if (StringUtils.isBlank(publisher)) {
             publisher = DEFAULT_PUBLISHER;
         }
 
         // Get creator, using any system defined creator to override the default which is based on user data
-        String creator = this.settingsManager.retrieveValue("creator");
+        String creator = this.props.creator();
         if (StringUtils.isBlank(creator)) {
             creator = getEzidCreatorField(bcid);
         }
-        String resolverTargetPrefix = settingsManager.retrieveValue("resolverTargetPrefix");
 
         return dcMap(
-                resolverTargetPrefix + bcid.getIdentifier(),
+                this.props.resolverTargetPrefix() + bcid.getIdentifier(),
                 creator,
                 bcid.getTitle(),
                 publisher,

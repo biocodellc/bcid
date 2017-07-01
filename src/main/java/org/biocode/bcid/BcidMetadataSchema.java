@@ -1,8 +1,7 @@
 package org.biocode.bcid;
 
-import biocode.fims.models.Bcid;
-import biocode.fims.models.Expedition;
-import biocode.fims.settings.SettingsManager;
+
+import org.biocode.bcid.models.Bcid;
 
 /**
  * Metadata Schema for Describing a Bcid--
@@ -26,13 +25,13 @@ public class BcidMetadataSchema {
     public metadataElement isPublic;
 
     private final Bcid bcid;
+    private final BcidProperties props;
     private final Identifier identifierObject;
-    private final SettingsManager settingsManager;
 
-    public BcidMetadataSchema(Bcid bcid, SettingsManager settingsManager, Identifier identifier) {
+    public BcidMetadataSchema(Bcid bcid, BcidProperties props, Identifier identifier) {
         this.bcid = bcid;
+        this.props = props;
         this.identifierObject = identifier;
-        this.settingsManager = settingsManager;
         registerMetadataElements();
         setMetadataElements();
     }
@@ -45,14 +44,14 @@ public class BcidMetadataSchema {
         }
 
         identifier.setValue(String.valueOf(bcid.getIdentifier()));
-        about.setValue(settingsManager.retrieveValue("resolverTargetPrefix") + identifierObject.getIdentifier());
+        about.setValue(props.resolverTargetPrefix() + identifierObject.getIdentifier());
         resource.setValue(bcid.getResourceType());
 
         dcDate.setValue(String.valueOf(bcid.getModified()));
         dcCreator.setValue(bcid.getUser().getFullName());
         dcTitle.setValue(bcid.getTitle());
         dcSource.setValue(identifierObject.getSuffix());
-        dcRights.setValue(settingsManager.retrieveValue("rights"));
+        dcRights.setValue(props.rights());
 
         if (!bcid.getUser().getFullName().equals("Test Account")) {
             dcIsReferencedBy.setValue("http://n2t.net/" + bcid.getIdentifier());

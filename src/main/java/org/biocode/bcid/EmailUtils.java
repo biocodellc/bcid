@@ -1,8 +1,9 @@
 package org.biocode.bcid;
 
-import biocode.fims.settings.SettingsManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import javax.mail.*;
 import javax.mail.internet.InternetAddress;
@@ -13,14 +14,14 @@ import java.util.Properties;
  * Class to send email notifications via Gmail.  If this appears to be a useful class later we can break it down
  * and allow for different email applications.
  */
+@Component
 public class EmailUtils {
-    private static Logger logger = LoggerFactory.getLogger(EmailUtils.class);
+    private final static Logger logger = LoggerFactory.getLogger(EmailUtils.class);
 
     private static final Properties props;
-    private static final SettingsManager settingManager = SettingsManager.getInstance();
-    private static final String username = settingManager.retrieveValue("mailUser");
-    private static final String password = settingManager.retrieveValue("mailPassword");
-    private static final String from = settingManager.retrieveValue("mailFrom");
+    private final String username;
+    private final String password;
+    private final String from;
 
     static {
         // A properties to store mail server smtp information such
@@ -37,6 +38,13 @@ public class EmailUtils {
         props.put("mail.smtp.port", "465");
     }
 
+    @Autowired
+    public EmailUtils (BcidProperties props) {
+        this.username = props.mailUser();
+        this.from = props.mailFrom();
+        this.password = props.mailPassword();
+    }
+
 
     /**
      * send an email to the admin
@@ -44,7 +52,7 @@ public class EmailUtils {
      * @param subject
      * @param text
      */
-    public static void sendAdminEmail(String subject, String text) {
+    public void sendAdminEmail(String subject, String text) {
         sendEmail(
                 username,
                 null,
@@ -54,14 +62,14 @@ public class EmailUtils {
 
     }
 
-    public static void sendEmail(String to, String subject, String text) {
+    public void sendEmail(String to, String subject, String text) {
         sendEmail(to, null, subject, text);
     }
 
     /**
      * send an email
      */
-    public static void sendEmail(String to, String[] cc, String subject, String text) {
+    public void sendEmail(String to, String[] cc, String subject, String text) {
         new Thread(() -> {
             Session session = Session.getInstance(props,
                     new javax.mail.Authenticator() {
