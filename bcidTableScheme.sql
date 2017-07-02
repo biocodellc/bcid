@@ -36,7 +36,8 @@ CREATE TABLE bcids (
   created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   modified TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   user_id UUID,
-  creator TEXT NOT NULL
+  creator TEXT NOT NULL,
+  client_id CHAR(20) REFERENCES clients (id)
 );
 
 CREATE INDEX bcids_identifier_idx on bcids (identifier);
@@ -44,3 +45,14 @@ CREATE INDEX bcids_resourceType_idx on bcids (resource_type);
 
 CREATE TRIGGER update_bcids_modtime BEFORE INSERT OR UPDATE ON bcids FOR EACH ROW EXECUTE PROCEDURE update_modified_column();
 CREATE TRIGGER set_bcids_createdtime BEFORE INSERT ON bcids FOR EACH ROW EXECUTE PROCEDURE set_created_column();
+
+DROP TABLE IF EXISTS clients;
+
+CREATE TABLE clients (
+  id CHAR(20) PRIMARY KEY NOT NULL,
+  secret CHAR(75) NOT NULL,
+  access_token CHAR(20),
+  token_expiration TIMESTAMP
+);
+
+

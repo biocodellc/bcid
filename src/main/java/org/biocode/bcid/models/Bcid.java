@@ -6,7 +6,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.validator.routines.UrlValidator;
 import org.hibernate.annotations.Type;
@@ -62,11 +61,19 @@ public class Bcid {
     @Temporal(TemporalType.TIMESTAMP)
     private Date modified;
 
-    @Type(type="pg-uuid")
-    @Column(name="user_id")
+    @Type(type = "pg-uuid")
+    @Column(name = "user_id")
     private UUID userId;
 
     private String creator;
+
+    @JsonIgnore
+    @ManyToOne
+    @JoinColumn(name = "client_id",
+            referencedColumnName = "id",
+            nullable = false
+    )
+    private Client client;
 
     @JsonPOJOBuilder(withPrefix = "")
     public static class BcidBuilder {
@@ -216,6 +223,10 @@ public class Bcid {
 
     public Date created() {
         return created;
+    }
+
+    public void setClient(Client client) {
+        this.client = client;
     }
 
     @Override

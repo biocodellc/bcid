@@ -46,6 +46,8 @@ public class BcidService {
     public Bcid create(Bcid bcid) {
         int naan = props.naan();
 
+//        bcid.setClient(client);
+
 //        User user = userService.getUser(userId);
 //        bcid.setUser(user);
 
