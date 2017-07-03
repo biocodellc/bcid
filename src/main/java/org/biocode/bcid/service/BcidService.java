@@ -11,6 +11,7 @@ import org.biocode.bcid.repositories.BcidRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -19,7 +20,6 @@ import java.math.BigInteger;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -65,9 +65,6 @@ public class BcidService {
         }
 
         bcidRepository.save(bcid);
-        if (bcid.ezidRequest()) {
-            createBcidsEZIDs();
-        }
 
         return bcid;
 
@@ -104,53 +101,48 @@ public class BcidService {
      * <p/>
      * case
      */
-    private void createBcidsEZIDs() {
+    @Scheduled(fixedDelay = 1000 * 60 * 10) // every 10 mins
+    public void createBcidsEZIDs() {
         // NOTE: On any type of EZID error, we DON'T want to fail the process.. This means we need
         // a separate mechanism on the server side to check creation of EZIDs.  This is easy enough to do
         // in the Database.
         HashMap<String, String> ezidErrors = new HashMap<>();
-        // Setup EZID account/login information
-        try {
-            ezidService.login(props.ezidUser(), props.ezidPass());
-        } catch (EzidException e) {
-            ezidErrors.put(null, ExceptionUtils.getStackTrace(e));
-
-        }
-        Set<Bcid> bcids = getBcidsWithEzidRequestNotMade();
         EzidUtils ezidUtils = new EzidUtils(props);
 
-        for (Bcid bcid : bcids) {
-            // Dublin Core metadata profile element
-            HashMap<String, String> map = ezidUtils.getDcMap(bcid);
+        Set<Bcid> bcids = getBcidsWithEzidRequestNotMade();
+        if (bcids.size() > 0) {
 
-            // Register this as an EZID
             try {
-                URI identifier = new URI(ezidService.createIdentifier(String.valueOf(bcid.identifier()), map));
-                bcid.setEzidMade(true);
-                logger.info("{}", identifier.toString());
-            } catch (EzidException e) {
-                logger.info("EzidException thrown trying to create Ezid {}. Trying to update now.", bcid.identifier(), e);
-                // Attempt to set Metadata if this is an Exception
-                try {
-                    ezidService.setMetadata(String.valueOf(bcid.identifier()), map);
-                    bcid.setEzidMade(true);
-                } catch (EzidException e1) {
-                    logger.error("Exception thrown in attempting to create OR update EZID {}, a permission issue?", bcid.identifier(), e1);
-                    ezidErrors.put(String.valueOf(bcid.identifier()), ExceptionUtils.getStackTrace(e1));
+                ezidService.login(props.ezidUser(), props.ezidPass());
+
+                for (Bcid bcid : bcids) {
+                    // Dublin Core metadata profile element
+                    HashMap<String, String> map = ezidUtils.getDcMap(bcid);
+
+                    // Register this as an EZID
+                    try {
+                        URI identifier = new URI(ezidService.createIdentifier(String.valueOf(bcid.identifier()), map));
+                        bcid.setEzidMade(true);
+                        // TODO implement a bulk persist
+                        bcidRepository.save(bcid);
+                        logger.info("{}", identifier.toString());
+                    } catch (EzidException e) {
+                        logger.error("Exception thrown in attempting to create EZID {}, a permission issue or identifier already exists?", bcid.identifier(), e);
+                        ezidErrors.put(String.valueOf(bcid.identifier()), ExceptionUtils.getStackTrace(e));
+                    } catch (URISyntaxException e) {
+                        logger.error("Bad uri syntax for " + bcid.identifier() + ", " + map, e);
+                        ezidErrors.put(String.valueOf(bcid.identifier()), "Bad uri syntax");
+                    }
                 }
 
-            } catch (URISyntaxException e) {
-                logger.error("Bad uri syntax for " + bcid.identifier() + ", " + map, e);
-                ezidErrors.put(String.valueOf(bcid.identifier()), "Bad uri syntax");
+            } catch (EzidException e) {
+                ezidErrors.put("", ExceptionUtils.getStackTrace(e));
+            }
+
+            if (!ezidErrors.isEmpty()) {
+                ezidUtils.sendErrorEmail(ezidErrors);
             }
         }
 
-        if (!ezidErrors.isEmpty()) {
-            ezidUtils.sendErrorEmail(ezidErrors);
-        }
-    }
-
-    public List<Bcid> getBcidsWithOutEzidRequest() {
-        return bcidRepository.findAllByEzidRequestFalse();
     }
 }

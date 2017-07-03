@@ -84,6 +84,7 @@ public class BcidServiceTest {
                 .build();
 
         bcidService.create(bcid);
+        bcidService.createBcidsEZIDs();
 
         assertNull(ezidService.getMetadata(bcid.identifier().toString()));
     }
@@ -96,6 +97,7 @@ public class BcidServiceTest {
                 .build();
 
         bcidService.create(bcid);
+        bcidService.createBcidsEZIDs();
 
         HashMap<String, String> expectedMetadata = new HashMap<>();
         expectedMetadata.put("dc.publisher", "Biocode-BCID");
@@ -119,11 +121,9 @@ public class BcidServiceTest {
                 .ezidRequest(true)
                 .build();
 
-        bcid1.setIdentifier(URI.create("ark://99999/a2"));
-        repo.save(bcid1); // bypassing the bcidService will not create the ezid initially, so it should be created on next bcid creation
-        assertNull(ezidService.getMetadata(bcid1.identifier().toString()));
-
+        bcidService.create(bcid1);
         bcidService.create(bcid2);
+        bcidService.createBcidsEZIDs();
 
         assertNotNull(ezidService.getMetadata(bcid1.identifier().toString()));
         assertNotNull(ezidService.getMetadata(bcid2.identifier().toString()));
