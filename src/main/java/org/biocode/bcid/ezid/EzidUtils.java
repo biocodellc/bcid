@@ -1,6 +1,5 @@
 package org.biocode.bcid.ezid;
 
-import org.apache.commons.lang.StringUtils;
 import org.biocode.bcid.BcidProperties;
 import org.biocode.bcid.EmailUtils;
 import org.biocode.bcid.models.Bcid;
@@ -35,7 +34,6 @@ public class EzidUtils {
 
     private HashMap<String, String> dcMap(String target, String creator, String title, String publisher, String when, String type) {
         HashMap<String, String> map = new HashMap<String, String>();
-        map.put("_profile", "dc");
         // _target needs to be resolved by biscicol for now
         map.put("_target", target);
         map.put("dc.creator", creator);
@@ -51,10 +49,10 @@ public class EzidUtils {
         String publisher = this.props.publisher();
 
         // Get creator, using any system defined creator to override the default which is based on user data
-        String creator = this.props.creator();
-        if (StringUtils.isBlank(creator)) {
+//        String creator = this.props.creator();
+//        if (StringUtils.isBlank(creator)) {
 //            creator = getEzidCreatorField(bcid);
-        }
+//        }
 
         return dcMap(
                 this.props.resolverTargetPrefix() + bcid.identifier(),

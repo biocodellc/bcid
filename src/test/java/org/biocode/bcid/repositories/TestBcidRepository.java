@@ -66,7 +66,14 @@ public class TestBcidRepository implements BcidRepository {
 
     @Override
     public Set<Bcid> findAllByEzidRequestTrueAndEzidMadeFalse() {
-        return null;
+        Set<Bcid> bcids = new HashSet<>();
+
+        for (Bcid b: storage) {
+            if (b.ezidRequest() && ! b.ezidMade()) {
+                bcids.add(b);
+            }
+        }
+        return bcids;
     }
 
     @Override

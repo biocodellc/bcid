@@ -4,8 +4,8 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 import org.biocode.bcid.BcidProperties;
 import org.biocode.bcid.Encoder;
 import org.biocode.bcid.ezid.EzidException;
-import org.biocode.bcid.ezid.EzidService;
 import org.biocode.bcid.ezid.EzidUtils;
+import org.biocode.bcid.ezid.IEzidService;
 import org.biocode.bcid.models.Bcid;
 import org.biocode.bcid.repositories.BcidRepository;
 import org.slf4j.Logger;
@@ -15,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
-import javax.ws.rs.ServerErrorException;
 import java.math.BigInteger;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -34,12 +33,14 @@ public class BcidService {
     private final BcidRepository bcidRepository;
     private final BcidProperties props;
     private final Encoder encoder;
+    private final IEzidService ezidService;
 
     @Autowired
-    public BcidService(BcidRepository bcidRepository, BcidProperties props, Encoder encoder) {
+    public BcidService(BcidRepository bcidRepository, BcidProperties props, Encoder encoder, IEzidService ezidService) {
         this.bcidRepository = bcidRepository;
         this.props = props;
         this.encoder = encoder;
+        this.ezidService = ezidService;
     }
 
     @Transactional
@@ -82,12 +83,6 @@ public class BcidService {
     }
 
 
-    @Transactional(readOnly = true)
-    public Set<Bcid> getBcidsWithEzidRequest() {
-        return bcidRepository.findAllByEzidRequestTrue();
-    }
-
-
     private URI generateBcidIdentifier(int bcidId, int naan) {
         String bow = scheme + "/" + naan + "/";
 
@@ -113,7 +108,6 @@ public class BcidService {
         // NOTE: On any type of EZID error, we DON'T want to fail the process.. This means we need
         // a separate mechanism on the server side to check creation of EZIDs.  This is easy enough to do
         // in the Database.
-        EzidService ezidService = new EzidService();
         HashMap<String, String> ezidErrors = new HashMap<>();
         // Setup EZID account/login information
         try {

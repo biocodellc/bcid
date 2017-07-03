@@ -83,7 +83,7 @@ import java.util.Map;
  *
  * @author Matthew Jones, NCEAS, UC Santa Barbara
  */
-public class EzidService {
+public class EzidService implements IEzidService {
 
     private static final String LOGIN_SERVICE = "https://ezid.cdlib.org/login";
     private static final String LOGOUT_SERVICE = "https://ezid.cdlib.org/logout";
@@ -121,6 +121,7 @@ public class EzidService {
      *
      * @throws EzidException if authentication fails for any reason
      */
+    @Override
     public void login(String username, String password) throws EzidException {
         String msg;
         try {
@@ -181,6 +182,7 @@ public class EzidService {
     /**
      * Log out of the EZID service, invalidating the current session.
      */
+    @Override
     public void logout() throws EzidException {
         String ezidEndpoint = LOGOUT_SERVICE;
         byte[] response = sendRequest(GET, ezidEndpoint);
@@ -207,6 +209,7 @@ public class EzidService {
      *
      * @throws EzidException if an error occurs while creating the identifier
      */
+    @Override
     public String createIdentifier(String identifier, HashMap<String, String> metadata) throws EzidException {
         String newId = null;
         String ezidEndpoint = ID_SERVICE + "/" + identifier;
@@ -250,6 +253,7 @@ public class EzidService {
      *
      * @throws EzidException if an error occurs while minting the identifier
      */
+    @Override
     public String mintIdentifier(String shoulder, HashMap<String, String> metadata) throws EzidException {
         String ezidEndpoint = MINT_SERVICE + "/" + shoulder;
 
@@ -272,6 +276,7 @@ public class EzidService {
      *
      * @throws EzidException if EZID produces an error during the service call
      */
+    @Override
     public HashMap<String, String> getMetadata(String identifier) throws EzidException {
         String ezidEndpoint = ID_SERVICE + "/" + identifier;
         byte[] response = sendRequest(GET, ezidEndpoint);
@@ -297,6 +302,7 @@ public class EzidService {
      *
      * @throws EzidException if the EZID service returns an error on setting metadata
      */
+    @Override
     public void setMetadata(String identifier, HashMap<String, String> metadata) throws EzidException {
         String ezidEndpoint = ID_SERVICE + "/" + identifier;
 
@@ -318,6 +324,7 @@ public class EzidService {
      *
      * @throws EzidException if the delete operation fails with an error from EZID
      */
+    @Override
     public void deleteIdentifier(String identifier) throws EzidException {
         String ezidEndpoint = ID_SERVICE + "/" + identifier;
         byte[] response = sendRequest(DELETE, ezidEndpoint);
