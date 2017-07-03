@@ -1,6 +1,7 @@
 package org.biocode.bcid;
 
 
+import org.biocode.bcid.rest.ClientContext;
 import org.springframework.context.annotation.*;
 
 @Configuration
@@ -8,4 +9,10 @@ import org.springframework.context.annotation.*;
 @PropertySource("classpath:bcid.properties")
 @Import({DataAccessConfig.class})
 public class BcidAppConfig {
+
+    @Bean
+    @Scope(value="request", proxyMode = ScopedProxyMode.TARGET_CLASS)
+    public ClientContext clientContext() {
+        return new ClientContext();
+    }
 }

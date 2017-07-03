@@ -1,8 +1,8 @@
 package org.biocode.bcid.rest;
 
-import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
 import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.server.ResourceConfig;
+import org.glassfish.jersey.server.spring.scope.RequestContextFilter;
 
 /**
  * @author rjewing
@@ -18,12 +18,9 @@ public class BcidJerseyApplication extends ResourceConfig {
 
 //        register(FimsExceptionMapper.class);
 
-//        register(RequestContextFilter.class);
-//        register(AuthenticatedFilter.class);
-//        register(AdminFilter.class);
-//        register(AuthenticationFilter.class);
-//        register(AuthenticatedUserResourceFilter.class);
-//        register(RequestLoggingFilter.class);
+        register(RequestContextFilter.class);
+        register(AuthenticatedFilter.class);
+        register(AuthenticationFilter.class);
 
         // need to manually register all subResources. This is so they get registered with the SpringComponentProvider
         // otherwise, the VersionTransformer advice will not register with the subResource method

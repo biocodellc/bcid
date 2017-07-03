@@ -48,9 +48,9 @@ public class OAuthController {
 
     private static class AccessToken {
         @JsonProperty("token_type")
-        public static String tokenType = "bearer";
+        public String tokenType = "bearer";
         @JsonProperty("expires_in")
-        public static int expiresIn = ClientService.TOKEN_EXPIRATION;
+        public int expiresIn = ClientService.TOKEN_EXPIRATION;
         @JsonProperty("access_token")
         public String accessToken;
 

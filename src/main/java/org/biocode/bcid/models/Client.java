@@ -20,6 +20,8 @@ public class Client {
     @Temporal(TemporalType.TIMESTAMP)
     private Date tokenExpiration;
 
+    Client() {}
+
     public Client(String id, String secret) {
         Assert.notNull(id);
         Assert.notNull(secret);

@@ -225,6 +225,10 @@ public class Bcid {
         return created;
     }
 
+    public Client client() {
+        return client;
+    }
+
     public void setClient(Client client) {
         this.client = client;
     }

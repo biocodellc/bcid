@@ -50,7 +50,7 @@ DROP TABLE IF EXISTS clients;
 
 CREATE TABLE clients (
   id CHAR(20) PRIMARY KEY NOT NULL,
-  secret CHAR(75) NOT NULL,
+  secret TEXT NOT NULL,
   access_token CHAR(20),
   token_expiration TIMESTAMP
 );

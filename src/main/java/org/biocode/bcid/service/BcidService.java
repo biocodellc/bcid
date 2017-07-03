@@ -46,13 +46,6 @@ public class BcidService {
     public Bcid create(Bcid bcid) {
         int naan = props.naan();
 
-//        bcid.setClient(client);
-
-//        User user = userService.getUser(userId);
-//        bcid.setUser(user);
-
-        // if the user is demo, never create ezid's
-//        if (bcid.ezidRequest() && userService.getUser(userId).getUsername().equals("demo"))
         if (!props.ezidRequest()) {
             bcid.setEzidRequest(false);
         }
