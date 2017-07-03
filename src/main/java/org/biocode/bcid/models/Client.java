@@ -29,6 +29,10 @@ public class Client {
         this.secret = secret;
     }
 
+    public String id() {
+        return id;
+    }
+
     public String secret() {
         return secret;
     }

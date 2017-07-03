@@ -16,7 +16,7 @@ import java.util.Set;
  * This repositories provides CRUD operations for {@link Bcid} objects
  */
 @Transactional
-public interface BcidRepository extends Repository<Bcid, Integer>, QueryByExampleExecutor<Bcid> {
+public interface BcidRepository extends Repository<Bcid, Integer> {
 
     @Modifying
     void delete(Bcid bcid);

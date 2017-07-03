@@ -57,6 +57,7 @@ dependencies {
     provided 'org.eclipse.jetty:jetty-servlet:9.3.3.v20150827'
 
     testCompile "junit:junit-dep:4.10"
+    testCompile group: 'org.springframework', name: 'spring-test', version: '4.3.4.RELEASE'
 }
 
 //=============================

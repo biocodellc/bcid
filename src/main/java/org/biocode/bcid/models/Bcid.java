@@ -75,64 +75,6 @@ public class Bcid {
     )
     private Client client;
 
-    @JsonPOJOBuilder(withPrefix = "")
-    public static class BcidBuilder {
-
-        // Required parameters
-        private String resourceType;
-        private String creator;
-
-        //Optional parameters
-        private boolean ezidRequest = true;
-        private String doi;
-        private String title;
-        private URI webAddress;
-        private UUID userId;
-
-        @JsonCreator
-        public BcidBuilder(String resourceType, String creator) {
-            Assert.notNull(resourceType, "Bcid resourceType must not be null");
-            Assert.notNull(creator, "Bcid creator must not be null");
-
-            this.resourceType = resourceType;
-            this.creator = creator;
-        }
-
-        public BcidBuilder ezidRequest(boolean val) {
-            ezidRequest = val;
-            return this;
-        }
-
-        public BcidBuilder doi(String val) {
-            doi = val;
-            return this;
-        }
-
-        public BcidBuilder title(String val) {
-            title = val;
-            return this;
-        }
-
-        public BcidBuilder webAddress(URI val) {
-            isValidUrl(val);
-            webAddress = val;
-            return this;
-        }
-
-        public BcidBuilder userId(UUID val) {
-            userId = val;
-            return this;
-        }
-
-        public Bcid build() {
-            if (StringUtils.isEmpty(title)) {
-                title = resourceType;
-            }
-            return new Bcid(this);
-        }
-
-    }
-
     private Bcid(BcidBuilder builder) {
         resourceType = builder.resourceType;
         ezidRequest = builder.ezidRequest;
@@ -161,6 +103,12 @@ public class Bcid {
 
     public int id() {
         return id;
+    }
+
+    public void setId(int id) {
+        if (this.id == 0) {
+            this.id = id;
+        }
     }
 
     public boolean ezidMade() {
@@ -273,5 +221,64 @@ public class Bcid {
             if (!urlValidator.isValid(String.valueOf(webAddress)))
                 throw new BadRequestException("Invalid URL for bcid webAddress");
         }
+    }
+
+
+    @JsonPOJOBuilder(withPrefix = "")
+    public static class BcidBuilder {
+
+        // Required parameters
+        private String resourceType;
+        private String creator;
+
+        //Optional parameters
+        private boolean ezidRequest = true;
+        private String doi;
+        private String title;
+        private URI webAddress;
+        private UUID userId;
+
+        @JsonCreator
+        public BcidBuilder(String resourceType, String creator) {
+            Assert.notNull(resourceType, "Bcid resourceType must not be null");
+            Assert.notNull(creator, "Bcid creator must not be null");
+
+            this.resourceType = resourceType;
+            this.creator = creator;
+        }
+
+        public BcidBuilder ezidRequest(boolean val) {
+            ezidRequest = val;
+            return this;
+        }
+
+        public BcidBuilder doi(String val) {
+            doi = val;
+            return this;
+        }
+
+        public BcidBuilder title(String val) {
+            title = val;
+            return this;
+        }
+
+        public BcidBuilder webAddress(URI val) {
+            isValidUrl(val);
+            webAddress = val;
+            return this;
+        }
+
+        public BcidBuilder userId(UUID val) {
+            userId = val;
+            return this;
+        }
+
+        public Bcid build() {
+            if (StringUtils.isEmpty(title)) {
+                title = resourceType;
+            }
+            return new Bcid(this);
+        }
+
     }
 }

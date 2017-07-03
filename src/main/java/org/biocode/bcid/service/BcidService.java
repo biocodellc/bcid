@@ -52,25 +52,15 @@ public class BcidService {
         bcidRepository.save(bcid);
 
         // generate the identifier
-        try {
-            URI identifier = generateBcidIdentifier(bcid.id(), naan);
-            bcid.setIdentifier(identifier);
+        URI identifier = generateBcidIdentifier(bcid.id(), naan);
+        bcid.setIdentifier(identifier);
 
-            if (bcid.webAddress() != null && bcid.webAddress().toString().contains("%7Bark%7D")) {
-                try {
-                    bcid.setWebAddress(new URI(StringUtils.replace(
-                            bcid.webAddress().toString(),
-                            "%7Bark%7D",
-                            identifier.toString()
-                    )));
-                } catch (URISyntaxException e) {
-                    throw new ServerErrorException(500, e);
-                }
-            }
-        } catch (URISyntaxException e) {
-            throw new ServerErrorException(String.format(
-                    "URISyntaxException while generating identifier for bcid: %s", bcid),
-                    500, e);
+        if (bcid.webAddress() != null && bcid.webAddress().toString().contains("%7Bark%7D")) {
+            bcid.setWebAddress(URI.create(StringUtils.replace(
+                    bcid.webAddress().toString(),
+                    "%7Bark%7D",
+                    identifier.toString()
+            )));
         }
 
         bcidRepository.save(bcid);
@@ -98,14 +88,14 @@ public class BcidService {
     }
 
 
-    private URI generateBcidIdentifier(int bcidId, int naan) throws URISyntaxException {
+    private URI generateBcidIdentifier(int bcidId, int naan) {
         String bow = scheme + "/" + naan + "/";
 
         // Create the shoulder Bcid (String Bcid Bcid)
         String shoulder = encoder.encode(new BigInteger(String.valueOf(bcidId)));
 
         // Create the identifier
-        return new URI(bow + shoulder);
+        return URI.create(bow + shoulder);
     }
 
     @Transactional(readOnly = true)
