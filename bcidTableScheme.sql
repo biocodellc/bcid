@@ -37,6 +37,7 @@ CREATE TABLE bcids (
   modified TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   user_id UUID,
   creator TEXT NOT NULL,
+  publisher TEXT NOT NULL,
   client_id CHAR(20) REFERENCES clients (id)
 );
 

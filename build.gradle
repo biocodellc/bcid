@@ -80,9 +80,14 @@ dependencies {
 task registerClient(type: JavaExec) {
     classpath = configurations.server + configurations.compile + sourceSets.main.runtimeClasspath
 
-    main = "org.biocode.bcid.ClientRegister"
+    main = "org.biocode.bcid.run.ClientRegister"
 }
 
+task ezidUpdate(type: JavaExec) {
+    classpath = configurations.server + configurations.compile + sourceSets.main.runtimeClasspath
+
+    main = "org.biocode.bcid.run.EzidUpdator"
+}
 
 //=============================
 //= deployment configuration
@@ -110,6 +115,6 @@ task registerClient(type: JavaExec) {
 //    remoteWarDir = remoteWarDevDirectory
 //}
 
-//deployFimsLocal {
-//    deployDir = localWarDirectory
-//}
+deployFimsLocal {
+    deployDir = localWarDirectory
+}

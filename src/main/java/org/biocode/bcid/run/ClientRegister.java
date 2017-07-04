@@ -1,5 +1,6 @@
-package org.biocode.bcid;
+package org.biocode.bcid.run;
 
+import org.biocode.bcid.BcidAppConfig;
 import org.biocode.bcid.models.ClientCredentials;
 import org.biocode.bcid.service.ClientService;
 import org.springframework.context.ApplicationContext;

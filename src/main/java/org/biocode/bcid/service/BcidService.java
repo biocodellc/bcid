@@ -95,6 +95,10 @@ public class BcidService {
         return bcidRepository.findAllByEzidRequestTrueAndEzidMadeFalse();
     }
 
+    public Set<Bcid> getBcidsWithEzidRequest() {
+        return bcidRepository.findAllByEzidRequestTrue();
+    }
+
     /**
      * Go through bcids table and create any ezidService fields that have yet to be created. We want to create any
      * EZIDs that have not been made yet.
@@ -106,6 +110,10 @@ public class BcidService {
         // NOTE: On any type of EZID error, we DON'T want to fail the process.. This means we need
         // a separate mechanism on the server side to check creation of EZIDs.  This is easy enough to do
         // in the Database.
+        if (!props.ezidRequest()) {
+            return;
+        }
+
         HashMap<String, String> ezidErrors = new HashMap<>();
         EzidUtils ezidUtils = new EzidUtils(props);
 

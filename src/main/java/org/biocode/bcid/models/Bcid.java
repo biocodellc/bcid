@@ -20,7 +20,7 @@ import java.util.UUID;
 /**
  * Bcid Entity object
  */
-@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonIgnoreProperties({"ezidMade", "created", "modified"})
 @JsonDeserialize(builder = Bcid.BcidBuilder.class)
 @Entity
 @Table(name = "bcids")
@@ -66,6 +66,7 @@ public class Bcid {
     private UUID userId;
 
     private String creator;
+    private String publisher;
 
     @JsonIgnore
     @ManyToOne
@@ -82,6 +83,7 @@ public class Bcid {
         title = builder.title;
         webAddress = builder.webAddress;
         creator = builder.creator;
+        publisher = builder.publisher;
         userId = builder.userId;
     }
 
@@ -165,6 +167,10 @@ public class Bcid {
         return creator;
     }
 
+    public String publisher() {
+        return publisher;
+    }
+
     public Date modified() {
         return modified;
     }
@@ -230,6 +236,7 @@ public class Bcid {
         // Required parameters
         private String resourceType;
         private String creator;
+        private String publisher;
 
         //Optional parameters
         private boolean ezidRequest = true;
@@ -239,12 +246,14 @@ public class Bcid {
         private UUID userId;
 
         @JsonCreator
-        public BcidBuilder(String resourceType, String creator) {
+        public BcidBuilder(String resourceType, String creator, String publisher) {
             Assert.notNull(resourceType, "Bcid resourceType must not be null");
             Assert.notNull(creator, "Bcid creator must not be null");
+            Assert.notNull(publisher, "Bcid publisher must not be null");
 
             this.resourceType = resourceType;
             this.creator = creator;
+            this.publisher = publisher;
         }
 
         public BcidBuilder ezidRequest(boolean val) {

@@ -1,6 +1,6 @@
 package org.biocode.bcid.ezid;
 
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+import org.apache.commons.lang.NotImplementedException;
 
 import java.util.HashMap;
 import java.util.Map;
