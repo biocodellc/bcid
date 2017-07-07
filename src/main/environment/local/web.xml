@@ -37,19 +37,4 @@
         <url-pattern>/*</url-pattern>
     </servlet-mapping>
 
-    <!--<filter>-->
-        <!--<filter-name>ClickjackFilterDeny</filter-name>-->
-        <!--<filter-class>biocode.fims.rest.filters.ClickJackFilter</filter-class>-->
-        <!--<init-param>-->
-            <!--<param-name>mode</param-name>-->
-            <!--<param-value>DENY</param-value>-->
-        <!--</init-param>-->
-    <!--</filter>-->
-
-    <!--&lt;!&ndash;  use the Deny version to prevent anyone, including yourself, from framing the page &ndash;&gt;-->
-    <!--<filter-mapping>-->
-        <!--<filter-name>ClickjackFilterDeny</filter-name>-->
-        <!--<url-pattern>/*</url-pattern>-->
-    <!--</filter-mapping>-->
-
 </web-app>

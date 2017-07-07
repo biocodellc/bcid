@@ -3,9 +3,10 @@ package org.biocode.bcid.service;
 import org.biocode.bcid.BcidEncoder;
 import org.biocode.bcid.BcidProperties;
 import org.biocode.bcid.ezid.EzidException;
-import org.biocode.bcid.ezid.TestEzidService;
+import org.biocode.bcid.ezid.EzidRequestType;
 import org.biocode.bcid.models.Bcid;
-import org.biocode.bcid.repositories.TestBcidRepository;
+import org.biocode.bcid.repositories.TestClientRepository;
+import org.biocode.bcid.repositories.TestEzidQueue;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.mock.env.MockEnvironment;
@@ -21,120 +22,97 @@ import static org.junit.Assert.*;
 public class BcidServiceTest {
 
     private BcidService bcidService;
-    private TestBcidRepository repo;
+    private TestEzidQueue queue;
     private TestEzidService ezidService;
     private MockEnvironment env;
+    private TestClientRepository clientRepository;
 
     @Before
     public void setUp() {
-        repo = new TestBcidRepository();
+        queue = new TestEzidQueue();
+        clientRepository = new TestClientRepository();
         ezidService = new TestEzidService();
         env = new MockEnvironment();
-        env.setProperty("naan", "99999");
+        env.setProperty("naan", "88888");
+        env.setProperty("ezidUser", "");
+        env.setProperty("ezidPass", "");
         env.setProperty("ezidRequests", "false");
-        this.bcidService = new BcidService(repo, new BcidProperties(env), new BcidEncoder(), ezidService);
+        this.bcidService = new BcidService(queue, clientRepository, new BcidProperties(env), new BcidEncoder(), ezidService);
     }
 
     @Test
-    public void should_generate_identifier_on_create() {
-        Bcid bcid = new Bcid.BcidBuilder("new resource", "demo user")
+    public void should_generate_test_identifier_on_create_no_ezid_request() throws EzidException {
+        Bcid bcid = new Bcid.BcidBuilder("new resource", "demo user", "fims")
                 .build();
 
-        bcidService.create(bcid);
+        bcidService.create(bcid, "client1");
 
-        Bcid stored = repo.getBcid(bcid.id());
-
-        assertNotNull(stored);
-        assertEquals(URI.create("ark:/99999/fk4"), stored.identifier());
-    }
-
-    @Test
-    public void should_override_bcid_ezidRequest_if_ezidRequests_prop_is_false() {
-        Bcid bcid = new Bcid.BcidBuilder("new resource", "demo user")
-                .ezidRequest(true)
-                .build();
-
-        bcidService.create(bcid);
-
-        Bcid stored = repo.getBcid(bcid.id());
+        Bcid stored = queue.get(bcid.identifier());
 
         assertNotNull(stored);
-        assertEquals(false, stored.ezidRequest());
+        assertEquals(URI.create("ark:/99999/fk4B2"), stored.identifier());
+
+        bcidService.mintEzids();
+
+        assertNotNull(ezidService.getMetadata(bcid.identifier().toString()));
+        assertTrue(clientRepository.isAssociated("client1", bcid.identifier()));
     }
 
     @Test
     public void should_replace_webAddress_ark_string_substitution() {
-        Bcid bcid = new Bcid.BcidBuilder("new resource", "demo user")
+        Bcid bcid = new Bcid.BcidBuilder("new resource", "demo user", "fims")
                 .webAddress(URI.create("http://example.com/%7Bark%7D"))
                 .build();
 
-        bcidService.create(bcid);
+        bcidService.create(bcid, "client1");
 
-        Bcid stored = repo.getBcid(bcid.id());
+        Bcid stored = queue.get(bcid.identifier());
 
         assertNotNull(stored);
-        assertEquals(URI.create("http://example.com/ark:/99999/fk4"), stored.webAddress());
+        assertEquals(URI.create("http://example.com/ark:/99999/fk4B2"), stored.webAddress());
     }
 
     @Test
-    public void should_not_generate_ezid_if_ezidRequest_is_false() throws EzidException {
-        enableEzidRequests();
-        Bcid bcid = new Bcid.BcidBuilder("new resource", "demo user")
-                .ezidRequest(false)
+    public void should_generate_non_test_identifier_if_ezidRequest_is_true() throws EzidException {
+        env.setProperty("ezidRequests", "true");
+        Bcid bcid = new Bcid.BcidBuilder("new resource", "demo user", "fims")
+                .webAddress(URI.create("http://example.com/id/%7Bark%7D"))
                 .build();
 
-        bcidService.create(bcid);
-        bcidService.createBcidsEZIDs();
-
-        assertNull(ezidService.getMetadata(bcid.identifier().toString()));
-    }
-
-    @Test
-    public void should_generate_ezid_if_ezidRequest_is_true() throws EzidException {
-        enableEzidRequests();
-        Bcid bcid = new Bcid.BcidBuilder("new resource", "demo user")
-                .ezidRequest(true)
-                .build();
-
-        bcidService.create(bcid);
-        bcidService.createBcidsEZIDs();
+        bcidService.create(bcid, "client1");
+        bcidService.mintEzids();
 
         HashMap<String, String> expectedMetadata = new HashMap<>();
-        expectedMetadata.put("dc.publisher", "Biocode-BCID");
+        expectedMetadata.put("dc.publisher", "fims");
         expectedMetadata.put("_profile", "dc");
         expectedMetadata.put("dc.type", "new resource");
         expectedMetadata.put("dc.creator", "demo user");
         expectedMetadata.put("dc.title", "new resource");
         expectedMetadata.put("dc.date", "null"); // this is set via the db and we can't test that
-        expectedMetadata.put("_target", "http://example.com/id/ark:/99999/fk4");
+        expectedMetadata.put("_target", "http://example.com/id/ark:/88888/B2");
 
         assertEquals(expectedMetadata, ezidService.getMetadata(bcid.identifier().toString()));
+        assertEquals(0, queue.size());
     }
 
     @Test
-    public void should_generate_ezid_for_all_bcids_where_ezidRequest_is_true_and_ezidMade_is_false() throws EzidException {
-        enableEzidRequests();
-        Bcid bcid1 = new Bcid.BcidBuilder("new resource", "demo user")
-                .ezidRequest(true)
-                .build();
-        Bcid bcid2 = new Bcid.BcidBuilder("new resource", "demo user")
-                .ezidRequest(true)
+    public void should_call_correct_ezid_service_method_depending_on_request_type() throws EzidException {
+        Bcid bcid = new Bcid.BcidBuilder("new resource", "demo user", "fims")
                 .build();
 
-        bcidService.create(bcid1);
-        bcidService.create(bcid2);
-        bcidService.createBcidsEZIDs();
+        Bcid bcid2 = new Bcid.BcidBuilder("new resource", "demo user", "fims")
+                .build();
+        bcid2.setIdentifier(URI.create("ark:/99999/fk4z2"));
 
-        assertNotNull(ezidService.getMetadata(bcid1.identifier().toString()));
-        assertNotNull(ezidService.getMetadata(bcid2.identifier().toString()));
+        bcidService.create(bcid, "client1");
+        bcidService.update(bcid2);
+
+        bcidService.mintEzids();
+
+        assertEquals(EzidRequestType.MINT, bcid.requestType());
+        assertEquals(EzidRequestType.UPDATE, bcid2.requestType());
+
+        assertFalse(ezidService.wasUpdated(bcid.identifier().toString()));
+        assertTrue(ezidService.wasUpdated(bcid2.identifier().toString()));
     }
-
-    private void enableEzidRequests() {
-        env.setProperty("ezidRequests", "true");
-        env.setProperty("ezidUser", "");
-        env.setProperty("ezidPass", "");
-        env.setProperty("publisher", "Biocode-BCID");
-        env.setProperty("resolverTargetPrefix", "http://example.com/id/");
-    }
-
 }

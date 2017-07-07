@@ -1,30 +1,23 @@
 package org.biocode.bcid.models;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import org.springframework.util.Assert;
 
-import javax.persistence.*;
 import java.util.Date;
 
 /**
  * @author rjewing
  */
-@Entity
-@Table(name = "clients")
 public class Client {
-    @Id
     private String id;
     private String secret;
-    @Column(name = "access_token")
     private String accessToken;
-    @Column(name = "token_expiration")
-    @Temporal(TemporalType.TIMESTAMP)
     private Date tokenExpiration;
 
-    Client() {}
-
+    @JsonCreator
     public Client(String id, String secret) {
-        Assert.notNull(id);
-        Assert.notNull(secret);
+        Assert.notNull(id, "id must not be null");
+        Assert.notNull(secret, "secret must not be null");
         this.id = id;
         this.secret = secret;
     }

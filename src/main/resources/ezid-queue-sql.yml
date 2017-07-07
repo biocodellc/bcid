@@ -1,0 +1,12 @@
+getEzidRequests: >
+  SELECT identifier, doi, title, web_address, resource_type, created, creator, publisher, request_type FROM ezid_queue;
+
+insertEzidRequest: >
+  INSERT INTO ezid_queue (identifier, doi, title, web_address, resource_type, creator, publisher, request_type)
+  VALUES (:identifier, :doi, :title, :webAddress, :resourceType, :creator, :publisher, :requestType);
+
+deleteEzidRequests: >
+  DELETE FROM ezid_queue WHERE identifier IN (:identifiers);
+
+incrementId: >
+  SELECT nextval('bcid_id');

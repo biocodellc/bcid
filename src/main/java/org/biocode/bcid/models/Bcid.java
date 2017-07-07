@@ -1,132 +1,43 @@
 package org.biocode.bcid.models;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.validator.routines.UrlValidator;
-import org.hibernate.annotations.Type;
+import org.biocode.bcid.ezid.EzidRequestType;
 import org.springframework.util.Assert;
 
-import javax.persistence.*;
 import javax.ws.rs.BadRequestException;
 import java.net.URI;
-import java.util.Date;
+import java.sql.Date;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 /**
  * Bcid Entity object
  */
-@JsonIgnoreProperties({"ezidMade", "created", "modified"})
+@JsonIgnoreProperties({"created", "requestType"})
 @JsonDeserialize(builder = Bcid.BcidBuilder.class)
-@Entity
-@Table(name = "bcids")
 public class Bcid {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @JsonIgnore
-    private int id;
-
-    @Column(columnDefinition = "bit", name = "ezid_made")
-    private boolean ezidMade;
-
-    @Column(columnDefinition = "bit not null", name = "ezid_request")
-    private boolean ezidRequest;
-
-    @Convert(converter = UriPersistenceConverter.class)
     private URI identifier;
-
     private String doi;
-
-    @Column(columnDefinition = "text")
     private String title;
-
-    @Convert(converter = UriPersistenceConverter.class)
-    @Column(name = "web_address")
     private URI webAddress;
-
-    @Column(nullable = false, name = "resource_type")
     private String resourceType;
-
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    @Column(updatable = false, insertable = false)
-    @Temporal(TemporalType.TIMESTAMP)
     private Date created;
-
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    @Column(updatable = false, insertable = false)
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date modified;
-
-    @Type(type = "pg-uuid")
-    @Column(name = "user_id")
-    private UUID userId;
-
     private String creator;
     private String publisher;
-
-    @JsonIgnore
-    @ManyToOne
-    @JoinColumn(name = "client_id",
-            referencedColumnName = "id",
-            nullable = false
-    )
-    private Client client;
+    private EzidRequestType requestType;
 
     private Bcid(BcidBuilder builder) {
         resourceType = builder.resourceType;
-        ezidRequest = builder.ezidRequest;
         doi = builder.doi;
         title = builder.title;
         webAddress = builder.webAddress;
         creator = builder.creator;
         publisher = builder.publisher;
-        userId = builder.userId;
-    }
-
-    // needed for hibernate
-    Bcid() {
-    }
-
-    public void update(Bcid bcid) {
-        if (!this.ezidMade()) {
-            ezidRequest = bcid.ezidRequest();
-        }
-
-        doi = bcid.doi();
-        title = bcid.title();
-        webAddress = bcid.webAddress();
-        userId = bcid.userId();
-        creator = bcid.creator();
-    }
-
-    public int id() {
-        return id;
-    }
-
-    public void setId(int id) {
-        if (this.id == 0) {
-            this.id = id;
-        }
-    }
-
-    public boolean ezidMade() {
-        return ezidMade;
-    }
-
-    public void setEzidMade(boolean ezidMade) {
-        this.ezidMade = ezidMade;
-    }
-
-    public boolean ezidRequest() {
-        return ezidRequest;
-    }
-
-    public void setEzidRequest(boolean ezidRequest) {
-        this.ezidRequest = ezidRequest;
     }
 
     public URI identifier() {
@@ -159,8 +70,10 @@ public class Bcid {
         return resourceType;
     }
 
-    public UUID userId() {
-        return userId;
+    public Date created() { return created; }
+
+    public void setCreated(Date dateTime) {
+        this.created = dateTime;
     }
 
     public String creator() {
@@ -171,21 +84,12 @@ public class Bcid {
         return publisher;
     }
 
-    public Date modified() {
-        return modified;
+    public EzidRequestType requestType() { return requestType; }
+
+    public void setRequestType(EzidRequestType requestType) {
+        this.requestType = requestType;
     }
 
-    public Date created() {
-        return created;
-    }
-
-    public Client client() {
-        return client;
-    }
-
-    public void setClient(Client client) {
-        this.client = client;
-    }
 
     @Override
     public boolean equals(Object o) {
@@ -205,18 +109,15 @@ public class Bcid {
     @Override
     public String toString() {
         return "Bcid{" +
-                "id=" + id +
-                ", ezidMade=" + ezidMade +
-                ", ezidRequest=" + ezidRequest +
-                ", identifier=" + identifier +
+                "identifier=" + identifier +
                 ", doi='" + doi + '\'' +
                 ", title='" + title + '\'' +
                 ", webAddress=" + webAddress +
                 ", resourceType='" + resourceType + '\'' +
                 ", created=" + created +
-                ", modified=" + modified +
-                ", userId=" + userId +
                 ", creator='" + creator + '\'' +
+                ", publisher='" + publisher + '\'' +
+                ", requestType=" + requestType +
                 '}';
     }
 
@@ -239,7 +140,6 @@ public class Bcid {
         private String publisher;
 
         //Optional parameters
-        private boolean ezidRequest = true;
         private String doi;
         private String title;
         private URI webAddress;
@@ -256,10 +156,6 @@ public class Bcid {
             this.publisher = publisher;
         }
 
-        public BcidBuilder ezidRequest(boolean val) {
-            ezidRequest = val;
-            return this;
-        }
 
         public BcidBuilder doi(String val) {
             doi = val;

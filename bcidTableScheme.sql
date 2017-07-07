@@ -1,5 +1,5 @@
 /**
-* SQL for Fims postgresql tables
+* SQL for Bcid postgresql tables
 */
 
 CREATE OR REPLACE FUNCTION update_modified_column()
@@ -14,38 +14,23 @@ BEGIN
 END;
 $$ language 'plpgsql';
 
-CREATE OR REPLACE FUNCTION set_created_column()
-  RETURNS TRIGGER AS $$
-BEGIN
-  NEW.created = now();
-  RETURN NEW;
-END;
-$$ language 'plpgsql';
+CREATE SEQUENCE bcid_id;
 
-DROP TABLE IF EXISTS bcids;
+DROP TABLE IF EXISTS ezid_queue;
 
-CREATE TABLE bcids (
-  id SERIAL PRIMARY KEY NOT NULL,
-  ezid_made BOOLEAN NOT NULL DEFAULT '0',
-  ezid_request BOOLEAN NOT NULL DEFAULT '1',
-  identifier TEXT,
+CREATE TABLE ezid_queue (
+  identifier TEXT PRIMARY KEY,
   doi TEXT,
   title TEXT,
   web_address TEXT,
   resource_type TEXT NOT NULL,
-  created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  modified TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  user_id UUID,
+  created TIMESTAMP,
   creator TEXT NOT NULL,
   publisher TEXT NOT NULL,
-  client_id CHAR(20) REFERENCES clients (id)
+  request_type TEXT NOT NULL
 );
 
-CREATE INDEX bcids_identifier_idx on bcids (identifier);
-CREATE INDEX bcids_resourceType_idx on bcids (resource_type);
-
-CREATE TRIGGER update_bcids_modtime BEFORE INSERT OR UPDATE ON bcids FOR EACH ROW EXECUTE PROCEDURE update_modified_column();
-CREATE TRIGGER set_bcids_createdtime BEFORE INSERT ON bcids FOR EACH ROW EXECUTE PROCEDURE set_created_column();
+CREATE TRIGGER set_ezid_queue_createdtime BEFORE INSERT ON ezid_queue FOR EACH ROW EXECUTE PROCEDURE set_created_column();
 
 DROP TABLE IF EXISTS clients;
 
@@ -56,4 +41,12 @@ CREATE TABLE clients (
   token_expiration TIMESTAMP
 );
 
+DROP TABLE IF EXISTS client_identifiers;
+
+CREATE TABLE client_identifiers (
+  client_id CHAR(20) NOT NULL REFERENCES clients(id),
+  identifier TEXT UNIQUE NOT NULL
+);
+
+CREATE INDEX client_identifiers_idx ON client_identifiers(client_id, identifier);
 

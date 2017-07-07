@@ -1,7 +1,7 @@
 package org.biocode.bcid.rest.services;
 
-import org.biocode.bcid.BcidProperties;
 import org.biocode.bcid.models.Bcid;
+import org.biocode.bcid.repositories.ClientRepository;
 import org.biocode.bcid.rest.Authenticated;
 import org.biocode.bcid.rest.ClientContext;
 import org.biocode.bcid.service.BcidService;
@@ -19,19 +19,12 @@ public class BcidController {
     private ClientContext clientContext;
 
     private final BcidService bcidService;
-    private final BcidProperties props;
+    private final ClientRepository clientRepository;
 
     @Autowired
-    public BcidController(BcidService bcidService, BcidProperties props) {
+    public BcidController(BcidService bcidService, ClientRepository clientRepository) {
         this.bcidService = bcidService;
-        this.props = props;
-    }
-
-    @GET
-    @Path("{identifier: .+}")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Bcid get(@PathParam("identifier") URI identifier) {
-        return bcidService.getBcid(identifier);
+        this.clientRepository = clientRepository;
     }
 
     @Authenticated
@@ -44,13 +37,7 @@ public class BcidController {
             throw new BadRequestException("bcid must not be null");
         }
 
-        // we can override ezid requests
-        if (!props.ezidRequest()) {
-            bcid.setEzidRequest(false);
-        }
-
-        bcid.setClient(clientContext.client());
-        return bcidService.create(bcid);
+        return bcidService.create(bcid, clientContext.client().id());
     }
 
     @Authenticated
@@ -58,27 +45,18 @@ public class BcidController {
     @Path("{identifier: .+}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Bcid bcidUpdate(@PathParam("identifier") URI identifier,
-                           Bcid bcid) {
+    public Bcid update(@PathParam("identifier") URI identifier,
+                       Bcid bcid) {
 
-        Bcid existingBcid = bcidService.getBcid(identifier);
+        if (!clientRepository.isAssociated(clientContext.client().id(), identifier)) {
+            throw new BadRequestException("Either a bcid with the given identifier doesn't exist or the client doesn't own the identifier");
 
-        if (existingBcid == null) {
-            throw new BadRequestException("bcid not found with the given identifier");
         }
 
-        if (!existingBcid.identifier().equals(identifier)) {
-            throw new BadRequestException("the identifier does not match the bcid object identifier. " +
-                    "You can not update the bcid identifier");
-        }
+        bcid.setIdentifier(identifier);
 
-        if (!clientContext.client().equals(existingBcid.client())) {
-            throw new ServerErrorException("You are not authorized to edit this bcid", 403);
-        }
+        bcidService.update(bcid);
 
-        existingBcid.update(bcid);
-        bcidService.update(existingBcid);
-
-        return existingBcid;
+        return bcid;
     }
 }

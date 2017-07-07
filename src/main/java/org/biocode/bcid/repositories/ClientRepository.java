@@ -1,18 +1,23 @@
 package org.biocode.bcid.repositories;
 
 import org.biocode.bcid.models.Client;
-import org.springframework.data.repository.Repository;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.net.URI;
 
 /**
  * @author rjewing
  */
 @Transactional
-public interface ClientRepository extends Repository<Client, String> {
+public interface ClientRepository {
 
     void save(Client client);
 
     Client getClientById(String id);
 
     Client getClientByAccessToken(String accessToken);
+
+    void associateIdentifier(String clientId, URI identifier);
+
+    boolean isAssociated(String id, URI identifier);
 }

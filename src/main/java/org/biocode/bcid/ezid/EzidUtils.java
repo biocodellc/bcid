@@ -1,10 +1,12 @@
 package org.biocode.bcid.ezid;
 
-import org.apache.commons.lang.StringUtils;
 import org.biocode.bcid.BcidProperties;
 import org.biocode.bcid.EmailUtils;
 import org.biocode.bcid.models.Bcid;
 
+import java.net.URI;
+import java.text.SimpleDateFormat;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -18,41 +20,29 @@ public class EzidUtils {
         this.props = props;
     }
 
-    private HashMap<String, String> ercMap(String target, String what, String who, String when) {
+    private HashMap<String, String> dcMap(URI target, String creator, String title, String publisher, String when, String type) {
         HashMap<String, String> map = new HashMap<String, String>();
-        map.put("_profile", "erc");
-
-        // _target needs to be resolved by biscicol for now
-        map.put("_target", target);
-        // what is always dataset
-        map.put("erc.what", what);
-        // who is the user who loaded this
-        map.put("erc.who", who);
-        // when is timestamp of data loading
-        map.put("erc.when", when);
-        return map;
-    }
-
-    private HashMap<String, String> dcMap(String target, String creator, String title, String publisher, String when, String type) {
-        HashMap<String, String> map = new HashMap<String, String>();
-        // _target needs to be resolved by biscicol for now
-        map.put("_target", target);
+        if (target != null) {
+            map.put("_target", target.toString());
+        }
         map.put("dc.creator", creator);
         map.put("dc.title", title);
         map.put("dc.publisher", publisher);
-        map.put("dc.date", when);
         map.put("dc.type", type);
         map.put("_profile", "dc");
         return map;
     }
 
     public HashMap<String, String> getDcMap(Bcid bcid) {
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+        String created = formatter.format(bcid.created());
+
         return dcMap(
-                this.props.resolverTargetPrefix() + bcid.identifier(),
+                bcid.webAddress(),
                 bcid.creator(),
                 bcid.title(),
                 bcid.publisher(),
-                String.valueOf(bcid.modified()),
+                created,
                 bcid.resourceType());
     }
 

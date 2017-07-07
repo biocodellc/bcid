@@ -1,0 +1,17 @@
+insert: >
+  INSERT INTO clients (id, secret, access_token, token_expiration)
+  VALUES (:id, :secret, :accessToken, :tokenExpiration)
+  ON CONFLICT (id)
+      DO UPDATE SET access_token = :accessToken, token_expiration = :tokenExpiration
+
+clientById: >
+  SELECT id, secret, access_token, token_expiration FROM clients where id = :id;
+
+clientByAccessToken: >
+  SELECT id, secret, access_token, token_expiration FROM clients where access_token = :accessToken;
+
+clientIdentifierIsAssociated: >
+  SELECT (count(*) > 0) as associated FROM client_identifiers where client_id = :clientId and identifier = :identifier;
+
+clientIdentifierAssociate: >
+  INSERT INTO client_identifiers (client_id, identifier) VALUES (:clientId, :identifier);

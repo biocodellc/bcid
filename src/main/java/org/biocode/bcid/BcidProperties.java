@@ -29,22 +29,6 @@ public class BcidProperties {
         return env.getRequiredProperty("mailFrom");
     }
 
-    public String resolverTargetPrefix() {
-        return env.getRequiredProperty("resolverTargetPrefix");
-    }
-
-    public String rights() {
-        return env.getRequiredProperty("rights");
-    }
-
-    public String publisher() {
-        return env.getRequiredProperty("publisher");
-    }
-
-    public String creator() {
-        return env.getProperty("creator");
-    }
-
     public int naan() {
         return env.getRequiredProperty("naan", int.class);
     }
