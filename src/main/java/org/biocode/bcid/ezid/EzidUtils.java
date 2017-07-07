@@ -28,6 +28,7 @@ public class EzidUtils {
         map.put("dc.creator", creator);
         map.put("dc.title", title);
         map.put("dc.publisher", publisher);
+        map.put("dc.date", when);
         map.put("dc.type", type);
         map.put("_profile", "dc");
         return map;

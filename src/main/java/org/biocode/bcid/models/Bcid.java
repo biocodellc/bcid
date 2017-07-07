@@ -11,9 +11,7 @@ import org.springframework.util.Assert;
 
 import javax.ws.rs.BadRequestException;
 import java.net.URI;
-import java.sql.Date;
-import java.time.LocalDateTime;
-import java.util.UUID;
+import java.util.Date;
 
 /**
  * Bcid Entity object
@@ -28,6 +26,7 @@ public class Bcid {
     private String resourceType;
     private Date created;
     private String creator;
+    private boolean ezidRequest;
     private String publisher;
     private EzidRequestType requestType;
 
@@ -35,6 +34,7 @@ public class Bcid {
         resourceType = builder.resourceType;
         doi = builder.doi;
         title = builder.title;
+        ezidRequest = builder.ezidRequest;
         webAddress = builder.webAddress;
         creator = builder.creator;
         publisher = builder.publisher;
@@ -74,6 +74,10 @@ public class Bcid {
 
     public void setCreated(Date dateTime) {
         this.created = dateTime;
+    }
+
+    public boolean ezidRequest() {
+        return ezidRequest;
     }
 
     public String creator() {
@@ -140,10 +144,10 @@ public class Bcid {
         private String publisher;
 
         //Optional parameters
+        private boolean ezidRequest = true;
         private String doi;
         private String title;
         private URI webAddress;
-        private UUID userId;
 
         @JsonCreator
         public BcidBuilder(String resourceType, String creator, String publisher) {
@@ -173,8 +177,8 @@ public class Bcid {
             return this;
         }
 
-        public BcidBuilder userId(UUID val) {
-            userId = val;
+        public BcidBuilder ezidRequest(boolean val) {
+            ezidRequest = val;
             return this;
         }
 

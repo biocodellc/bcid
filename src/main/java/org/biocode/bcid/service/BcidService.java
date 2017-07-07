@@ -49,7 +49,7 @@ public class BcidService {
     @Transactional
     public Bcid create(Bcid bcid, String clientId) {
         // generate the identifier
-        URI identifier = generateBcidIdentifier(ezidQueue.incrementId());
+        URI identifier = generateBcidIdentifier(ezidQueue.incrementId(), (bcid.ezidRequest() && props.ezidRequest()));
         bcid.setIdentifier(identifier);
 
         if (bcid.webAddress() != null && bcid.webAddress().toString().contains("%7Bark%7D")) {
@@ -74,12 +74,12 @@ public class BcidService {
         ezidQueue.save(bcid);
     }
 
-    private URI generateBcidIdentifier(int bcidId) {
+    private URI generateBcidIdentifier(int bcidId, boolean ezidRequest) {
         // Create the shoulder Bcid (String Bcid Bcid)
         String shoulder = encoder.encode(new BigInteger(String.valueOf(bcidId)));
 
         String bow;
-        if (props.ezidRequest()) {
+        if (ezidRequest) {
             bow = scheme + "/" + props.naan() + "/";
         } else {
             bow = scheme + "/99999/fk4"; // ark:/99999/fk4 is a special testing identifier that is deleted periodically

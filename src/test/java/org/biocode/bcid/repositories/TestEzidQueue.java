@@ -23,7 +23,7 @@ public class TestEzidQueue implements EzidQueue {
     }
 
     @Override
-    public void delete(List<String> identifiers) {
+    public void delete(Set<String> identifiers) {
         storage = storage.stream()
                 .filter((b) -> !identifiers.contains(b.identifier().toString()))
                 .collect(Collectors.toList());
