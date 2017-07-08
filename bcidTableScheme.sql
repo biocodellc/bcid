@@ -2,15 +2,11 @@
 * SQL for Bcid postgresql tables
 */
 
-CREATE OR REPLACE FUNCTION update_modified_column()
+CREATE OR REPLACE FUNCTION set_created_column()
   RETURNS TRIGGER AS $$
 BEGIN
-  IF TG_OP = 'INSERT' OR row(NEW.*) IS DISTINCT FROM row(OLD.*) THEN
-    NEW.modified = now();
-    RETURN NEW;
-  ELSE
-    RETURN OLD;
-  END IF;
+  NEW.created = now();
+  RETURN NEW;
 END;
 $$ language 'plpgsql';
 
