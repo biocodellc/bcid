@@ -65,13 +65,13 @@ dependencies {
 //=============================
 
 //// jetty ssh plugin
-//remotes {
-//    biscicol {
-//        host = 'biscicol.org'
-//        user = biscicolUser
-//        identity = file(identityFile)
-//    }
-//}
+remotes {
+    biscicol {
+        host = 'biscicol.org'
+        user = biscicolUser
+        password = biscicolPassword
+    }
+}
 
 //=============================
 //= application configuration
@@ -93,27 +93,27 @@ task ezidUpdate(type: JavaExec) {
 //= deployment configuration
 //=============================
 
-//updateDependencies {
-//    remote = remotes.biscicol
-//    location = remoteLibsDirectory
-//}
+updateDependencies {
+    remote = remotes.biscicol
+    location = remoteLibsDirectory
+}
 
-//updateDependenciesDev {
-//    remote = remotes.biscicol
-//    location = remoteDevLibsDirectory
-//}
+updateDependenciesDev {
+    remote = remotes.biscicol
+    location = remoteDevLibsDirectory
+}
 
-//deployFims {
-//    remote = remotes.biscicol
-//    remoteLibsDir = remoteLibsDirectory
-//    remoteWarDir = remoteWarDirectory
-//}
+deployFims {
+    remote = remotes.biscicol
+    remoteLibsDir = remoteLibsDirectory
+    remoteWarDir = remoteWarDirectory
+}
 
-//deployFimsDev {
-//    remote = remotes.biscicol
-//    remoteLibsDir = remoteDevLibsDirectory
-//    remoteWarDir = remoteWarDevDirectory
-//}
+deployFimsDev {
+    remote = remotes.biscicol
+    remoteLibsDir = remoteDevLibsDirectory
+    remoteWarDir = remoteWarDevDirectory
+}
 
 deployFimsLocal {
     deployDir = localWarDirectory
