@@ -3,6 +3,7 @@
 *.iml
 *.props
 *.properties
+!gradle/wrapper/gradle-wrapper.properties
 dist/*
 build/*
 classes/*
