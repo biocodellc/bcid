@@ -3,6 +3,7 @@ package org.biocode.bcid.repositories;
 import org.biocode.bcid.ClientSql;
 import org.biocode.bcid.models.Client;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.namedparam.BeanPropertySqlParameterSource;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -49,20 +50,28 @@ public class PostgresClientRepository implements ClientRepository {
 
     @Override
     public Client getClientById(String id) {
-        return jdbcTemplate.queryForObject(
-                sql.getClientById(),
-                new MapSqlParameterSource("id", id),
-                this::mapRow
-        );
+        try {
+            return jdbcTemplate.queryForObject(
+                    sql.getClientById(),
+                    new MapSqlParameterSource("id", id),
+                    this::mapRow
+            );
+        } catch (EmptyResultDataAccessException e) {
+            return null;
+        }
     }
 
     @Override
     public Client getClientByAccessToken(String accessToken) {
-        return jdbcTemplate.queryForObject(
-                sql.getClientByAccessToekn(),
-                new MapSqlParameterSource("accessToken", accessToken),
-                this::mapRow
-        );
+        try {
+            return jdbcTemplate.queryForObject(
+                    sql.getClientByAccessToekn(),
+                    new MapSqlParameterSource("accessToken", accessToken),
+                    this::mapRow
+            );
+        } catch(EmptyResultDataAccessException e) {
+            return null;
+        }
     }
 
     @Override
@@ -82,11 +91,15 @@ public class PostgresClientRepository implements ClientRepository {
         MapSqlParameterSource params = new MapSqlParameterSource("clientId", id);
         params.addValue("identifier", identifier, Types.VARCHAR);
 
-        return jdbcTemplate.queryForObject(
-                sql.clientIdentifierIsAssociated(),
-                params,
-                (rs, rowNum) -> rs.getBoolean("associated")
-        );
+        try {
+            return jdbcTemplate.queryForObject(
+                    sql.clientIdentifierIsAssociated(),
+                    params,
+                    (rs, rowNum) -> rs.getBoolean("associated")
+            );
+        } catch (EmptyResultDataAccessException e) {
+            return false;
+        }
     }
 
     private Client mapRow(ResultSet rs, int rowNum) throws SQLException {

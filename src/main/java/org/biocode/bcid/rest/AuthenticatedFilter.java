@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.Priority;
 import javax.ws.rs.ForbiddenException;
+import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.Priorities;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
@@ -24,7 +25,7 @@ public class AuthenticatedFilter implements ContainerRequestFilter {
     public void filter(ContainerRequestContext requestContext)
             throws IOException {
         if (clientContext.client() == null) {
-            throw new ForbiddenException("You must be logged in to access this service");
+            throw new NotAuthorizedException("You must be logged in to access this service");
         }
     }
 }
