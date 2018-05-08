@@ -3,6 +3,7 @@
 *.iml
 *.props
 *.properties
+!src/main/environment/*/log4j.properties
 !gradle/wrapper/gradle-wrapper.properties
 dist/*
 build/*
@@ -15,4 +16,4 @@ biscicol-fims.ipr
 biscicol-fims.iws
 src/main/web/WEB-INF/web.xml
 out
-
+bin
