@@ -40,11 +40,11 @@ EZID offers the n2t.net resolver for ARKs.  BCIDs take the following form:
 
 ```https://n2t.net/ark:/21547/R2MBIO56```
  
-  * *https://n2t.net/*: resolution target (can substitute different targets here)
-  * *ark*: Scheme
-  * *21547*: Name Assigning Authority
-  * *R2*: Group identifier includes all characters including up to and including the number 2
-  * *MBIO0056*: Locally unique identifier (optional)
+  * **https://n2t.net/**: resolution target (can substitute different targets here)
+  * **ark**: Scheme
+  * **21547**: Name Assigning Authority
+  * **R2**: Group identifier includes all characters including up to and including the number 2. This stands for a set of entities belonging to the same type of entity (typically assigned the same ontology class)
+  * **MBIO56**: Locally unique identifier (optional)
 
 Licensing Terms
 
