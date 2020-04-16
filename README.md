@@ -1,10 +1,14 @@
 # Biocode Commons Identifiers
 
 Biocode Commons Identifiers (BCIDs) are a special kind of identifier that enables tracking and 
-managing physical objects or processes. 
+managing physical objects or processes by registering a single parent that provides resolution for
+multiple children, provided as suffixes to the registered identifier. 
 Historically, tracking and managing samples or processes and their derivatives across institutions has proved 
 to be a challenge and typically suffer from one or more drawbacks that undermine their utility, 
-including lack of a long term persistence strategy, and resolvability.
+including lack of a long term persistence strategy, resolvability, and difficulty in registering 
+every possible sample, which can number in the billions of possibilities.  Using BCIDs we can register
+high level concepts for each datasaet, and thus create a single identifier which can resolve potentially
+millions of discrete "child" objects by appending any conforming locally unique identifier to the parent.
 
 ## Principles
 
