@@ -38,7 +38,7 @@ string and can be extracted/queried from the identifier:
 
 EZID offers the n2t.net resolver for ARKs.  BCIDs take the following form:
 
-```https://n2t.net/ark:/21547/R2MBIO0056```
+```https://n2t.net/ark:/21547/R2MBIO56```
  
   * *https://n2t.net/*: resolution target (can substitute different targets here)
   * *ark*: Scheme
