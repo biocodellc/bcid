@@ -1,6 +1,7 @@
 package org.biocode.bcid.models;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
@@ -150,7 +151,7 @@ public class Bcid {
         private URI webAddress;
 
         @JsonCreator
-        public BcidBuilder(String resourceType, String creator, String publisher) {
+        public BcidBuilder(@JsonProperty("resourceType")String resourceType, @JsonProperty("creator")String creator, @JsonProperty("publisher")String publisher) {
             Assert.notNull(resourceType, "Bcid resourceType must not be null");
             Assert.notNull(creator, "Bcid creator must not be null");
             Assert.notNull(publisher, "Bcid publisher must not be null");
