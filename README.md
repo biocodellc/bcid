@@ -48,7 +48,7 @@ EZID offers the n2t.net resolver for ARKs.  BCIDs take the following form:
   * **21547**: Name Assigning Authority
   * **CXs2**: Group identifier includes all characters including up to and including the number 2. This stands for a set of entities belonging to the same type of entity (typically assigned the same ontology class)
   * **MBIO1044**: Locally unique identifier (optional)
-  * `curl https://ezid.cdlib.org/id/ark:/21547/CXs2` fetch text metadata from ezid service, returns
+  * `curl https://ezid.cdlib.org/id/ark:/21547/CXs2`: Fetch the Group identifier metadata, all text after the last "/" up until the first integer.
   ```
   success: ark:/21547/CXs2
   dc.date: 2019-02-28
