@@ -41,13 +41,30 @@ string and can be extracted/queried from the identifier:
 
 EZID offers the n2t.net resolver for ARKs.  BCIDs take the following form:
 
-```https://n2t.net/ark:/21547/R2MBIO56```
+``` https://n2t.net/ark:/21547/CXs2MBIO1044 ```
  
   * **https://n2t.net/**: resolution target (can substitute different targets here)
   * **ark**: Scheme
   * **21547**: Name Assigning Authority
-  * **R2**: Group identifier includes all characters including up to and including the number 2. This stands for a set of entities belonging to the same type of entity (typically assigned the same ontology class)
-  * **MBIO56**: Locally unique identifier (optional)
+  * **CXs2**: Group identifier includes all characters including up to and including the number 2. This stands for a set of entities belonging to the same type of entity (typically assigned the same ontology class)
+  * **MBIO1044**: Locally unique identifier (optional)
+  * `curl https://ezid.cdlib.org/id/ark:/21547/CXs2` fetch text metadata from ezid service, returns
+  ```
+  success: ark:/21547/CXs2
+  dc.date: 2019-02-28
+  dc.type: http://rs.tdwg.org/dwc/terms/MaterialSample
+  dc.title: Sample
+  dc.creator: creator_email@service.com
+  dc.publisher: GeOMe-db FIMS
+  _owner: bcid
+  _ownergroup: ucblibrary
+  _created: 1551397078
+  _updated: 1560274877
+  _profile: dc
+  _target: https://geome-db.org/record/ark:/21547/CXs2
+  _status: public
+  _export: yes
+  ```
 
 Licensing Terms
 
