@@ -10,6 +10,7 @@ import org.springframework.stereotype.Controller;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import java.net.URI;
 
 @Controller
@@ -27,6 +28,19 @@ public class BcidController {
         this.clientRepository = clientRepository;
     }
 
+    // ✅ GET `/` - Public endpoint displaying available services
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getRootResponse() {
+        String jsonResponse = "{"
+            + "\"message\": \"BCID Service is running.\","
+            + "\"services\": {"
+            + "  \"create_identifier\": \"POST /\","
+            + "  \"update_identifier\": \"PUT /{identifier}\""
+            + "}"
+            + "}";
+        return Response.ok(jsonResponse).build();
+    }
     @Authenticated
     @POST
     @Consumes(MediaType.APPLICATION_JSON)

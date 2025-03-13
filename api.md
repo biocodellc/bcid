@@ -16,45 +16,27 @@ Include the API key in headers:
 Authorization: Bearer YOUR_API_KEY
 ```
 
-## Endpoints
+## Examples
 
-### 1. Create Identifier
 
-**POST** `/identifiers`
+display the root service options
+```
+curl "https://bcid.geome-db.org/" 
 
-```json
-{
-  "metadata": {
-    "title": "Sample Dataset",
-    "description": "Description",
-    "creator": "John Doe",
-    "institution": "Sample University"
-  }
-}
+
+Authenticate (returns AUTH_TOKEN)
+```
+curl -X POST "https://bcid.geome-db.org/oAuth2/token" \
+     -H "Content-Type: application/x-www-form-urlencoded" \
+     -H "Accept: application/json" \
+     -d "grant_type=client_credentials" \
+     -d "client_id=CLIENT_ID" \
+     -d "client_secret=CLIENT_SECRET"
 ```
 
-### 2. Get Identifier
 
-**GET** `/identifiers/{id}`
-
-### 3. Update Identifier
-
-**PUT** `/identifiers/{id}`
-
-```json
-{
-  "metadata": { "title": "Updated Title" }
-}
+Display available endpoints:
 ```
-
-### 4. Delete Identifier
-
-**DELETE** `/identifiers/{id}`
-
-### 5. List Identifiers
-
-**GET** `/identifiers`
-
-For more details, visit [API Documentation](api.md).
-
+curl -X OPTIONS "https://bcid.geome-db.org/" \
+    -H "Authorization: Bearer AUTH_TOKEN"
 
